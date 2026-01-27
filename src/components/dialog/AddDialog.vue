@@ -130,12 +130,26 @@ async function onFileChange(data: { file: UploadFileInfo }) {
     return
   }
   try {
-    const arrayBuffer = await rawFile.arrayBuffer()
-    form.metainfo = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
+    const b64 = await readLocalTorrent(rawFile)
+    form.metainfo = b64
   } catch {
     message.error($t('addDialog.readFileFailed'))
     form.metainfo = ''
   }
+}
+
+async function readLocalTorrent(file: File): Promise<string> {
+  return await new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const b64 = (reader.result as string).match(/data:[^/]*\/[^;]*;base64,(.*)/)?.[1]
+      if (b64 === undefined) {
+        throw Error('Error reading file')
+      }
+      resolve(b64)
+    }
+    reader.readAsDataURL(file)
+  })
 }
 
 function onCancel() {
