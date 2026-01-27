@@ -15,6 +15,7 @@ import checkboxUncheckedIconUrl from '@/assets/icons/checkboxunchecked.svg?raw'
 import { useSettingStore, useTorrentStore } from '@/store'
 import { isMac } from '@/utils/index'
 import type { AnyTouchEvent } from 'any-touch'
+import { colord, extend } from 'colord'
 import { useThemeVars } from 'naive-ui'
 import BandwidthPriorityCell from './cells/BandwidthPriorityCell'
 import ByteRateCell from './cells/ByteRateCell'
@@ -36,6 +37,11 @@ import { drawIcon, drawLine, getIconImg } from './cells/utils'
 import { useTableStore } from './store/tableStore'
 import useToolbarStore from './store/toolbarStore'
 import { ITEM_HEIGHT } from './store/utils'
+import mixPlugin from 'colord/plugins/mix'
+
+// 扩展 colord 支持混合功能
+extend([mixPlugin])
+
 defineExpose({
   onMouseMove,
   onMouseLeave,
@@ -65,10 +71,23 @@ const containerWidth = computed(() => {
 const startY = computed(() => tableStore.startY)
 const hoverRowIndex = ref<number | null>(null)
 const theme = useThemeVars()
+const themeMode = computed(() => settingStore.setting.theme)
+
 const bodyCanvas = ref<HTMLCanvasElement | null>(null)
 const bodyCanvasSelect = ref<HTMLCanvasElement | null>(null)
 let rafId: number | null = null
 const rowMenuId = ref<number | undefined>()
+
+const tableColors = computed(() => {
+  const mixedColor = themeMode.value === 'dark' ? '#ffffff00' : '#00000000'
+  const oddColor = colord(theme.value.tableColorStriped).mix(mixedColor, 0.5).toRgbString()
+  const mixedSelectedColor = themeMode.value === 'dark' ? '#00000000' : '#ffffff00'
+  const selectedBgColor = colord(theme.value.primaryColor).mix(mixedSelectedColor, 0.3).toRgbString()
+  return {
+    selectedBgColor,
+    oddColor
+  }
+})
 
 const cellRender: Record<string, typeof DefaultCell> = {
   name: NameCell,
@@ -189,9 +208,9 @@ function drawRow(
   }
   let bgColor: string | undefined = undefined
   if (status === 0 && index % 2 !== 0) {
-    bgColor = `color-mix(in srgb, ${theme.value.tableColorStriped} 50%, transparent)`
+    bgColor = tableColors.value.oddColor
   } else if (status === 1) {
-    bgColor = `color-mix(in srgb, ${theme.value.primaryColor} 50%, transparent)`
+    bgColor = tableColors.value.selectedBgColor
   } else if (status === 2) {
     bgColor = theme.value.tableColorHover
   }
@@ -240,9 +259,9 @@ function drawCheckboxRow(ctx: CanvasRenderingContext2D, index: number, status: n
   }
   let bgColor: string | undefined = undefined
   if (status === 0 && index % 2 !== 0) {
-    bgColor = `color-mix(in srgb, ${theme.value.tableColorStriped} 50%, transparent)`
+    bgColor = tableColors.value.oddColor
   } else if (status === 1) {
-    bgColor = `color-mix(in srgb, ${theme.value.primaryColor} 50%, transparent)`
+    bgColor = tableColors.value.selectedBgColor
   } else if (status === 2) {
     bgColor = theme.value.tableColorHover
   }

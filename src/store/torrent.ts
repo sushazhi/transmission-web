@@ -239,7 +239,7 @@ export const useTorrentStore = defineStore('torrent', () => {
   watch([search, statusFilter, labelsFilter, trackerFilter, errorStringFilter, downloadDirFilter], () => {
     clearSelectedKeys()
   })
-  ;(window as any).torrents = torrents
+    ; (window as any).torrents = torrents
   return {
     getColumnTitle,
     torrents,

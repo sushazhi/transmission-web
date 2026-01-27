@@ -22,6 +22,11 @@ import { DEFAULT_MOBILE_CELLS } from './MobileCells'
 import { isClickInMenuButton } from './MobileCells/NameCell'
 import { roundRect } from './cells/utils'
 import { TOOLBAR_HEIGHT } from './store/utils'
+import { colord, extend } from 'colord'
+import mixPlugin from 'colord/plugins/mix'
+
+// 扩展 colord 支持混合功能
+extend([mixPlugin])
 
 defineExpose({
   onMouseMove,
@@ -105,7 +110,8 @@ function drawMobileCard(
   let borderColor = theme.value.borderColor
 
   if (status === 1) {
-    bgColor = `color-mix(in srgb, ${theme.value.primaryColor} 10%, ${theme.value.cardColor})`
+    // bgColor = `color-mix(in srgb, ${theme.value.primaryColor} 10%, ${theme.value.cardColor})`
+    bgColor = colord(theme.value.primaryColor).mix(theme.value.cardColor, 0.1).alpha(0.05).toRgbString()
     borderColor = theme.value.primaryColor
   } else if (status === 2) {
     bgColor = theme.value.tableColorHover

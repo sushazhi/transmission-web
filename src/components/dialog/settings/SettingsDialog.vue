@@ -53,6 +53,7 @@ function onCancel() {
   :global {
     .n-dialog__title {
       padding-left: 16px;
+      padding-top: 16px;
     }
     .settings-footer {
       background-color: transparent !important;

@@ -77,30 +77,32 @@ button:focus {
   padding-bottom: var(--bottom-inset);
 }
 
-
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+
   .n-popover:not(.n-popover--raw),
-  .n-dropdown-menu{
-    background-color: transparent;
+  .n-dropdown-menu {
+    background-color: color-mix(in srgb, var(--n-color) 35%, transparent);
     position: relative;
-    &::after{
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: -1;
-      right: 0;
-      bottom: 0;
-      -webkit-backdrop-filter: blur(10px) brightness(95%);
-      backdrop-filter: blur(10px) brightness(95%);
-      border-radius: var(--n-border-radius);
-      animation: none;
+    -webkit-backdrop-filter: blur(10px) brightness(95%);
+    backdrop-filter: blur(10px) brightness(95%);
+  }
+  [data-theme="light"] {
+    .n-popover:not(.n-popover--raw),
+    .n-dropdown-menu {
+      background-color: color-mix(in srgb, var(--n-color) 50%, transparent);
     }
   }
   .n-dialog {
-    background-color: color-mix(in srgb, var(--n-color) 30%, transparent);
+    background-color: color-mix(in srgb, var(--n-color) 35%, transparent);
     -webkit-backdrop-filter: blur(15px) brightness(95%);
     backdrop-filter: blur(15px) brightness(95%);
   }
 
+  [data-theme="light"] {
+    .n-dialog {
+      background-color: color-mix(in srgb, var(--n-color) 65%, transparent);
+      -webkit-backdrop-filter: blur(15px) brightness(95%);
+      backdrop-filter: blur(15px) brightness(95%);
+    }
+  }
 }

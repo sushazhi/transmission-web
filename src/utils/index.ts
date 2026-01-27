@@ -188,3 +188,12 @@ export function isMac() {
 
 // 导出复制相关工具函数
 export { copyToClipboard, isClipboardSupported } from './clipboard'
+
+
+// utils/color.ts 中添加
+export function supportsColorMix(): boolean {
+  if (typeof CSS === 'undefined' || !CSS.supports) {
+    return false
+  }
+  return CSS.supports('background-color', 'color-mix(in srgb, red, blue)')
+}

@@ -47,7 +47,7 @@ export default defineConfig(({ mode }) => {
         }
       }
     },
-    envPrefix: ['VITE_', 'DOMAIN', 'AUTH'],
+    envPrefix: ['VITE_'],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url))
@@ -72,12 +72,17 @@ export default defineConfig(({ mode }) => {
     ],
     server: {
       host: '0.0.0.0',
-      port: 5173,
+      port: 5174,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        Authorization: 'Basic YWRtaW46Q2lkc2ljLXNpc2phZC1yeXptdTE='
+      },
+      proxy: {
+        '/transmission/rpc': {
+          target: env.VITE_DOMAIN,
+          changeOrigin: true
+        }
       }
     }
   }

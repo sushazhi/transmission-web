@@ -618,10 +618,12 @@ export async function callRpc<T = any>(
 ): Promise<T | undefined> {
   try {
     const res = await instance.post('', { method, arguments: args }, config)
+    if (res.status !== 200) {
+      throw new Error('RPC failed')
+    }
     return res.data
   } catch (error) {
-    console.error(error)
-    return undefined
+    throw new Error('RPC failed')
   }
 }
 // ================== 高版本 RPC 封装 ==================
