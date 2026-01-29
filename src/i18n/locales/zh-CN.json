@@ -170,6 +170,7 @@
     "download": "↓ 下载: {rate} ({limit})",
     "totalSize": "文件总大小: {size}",
     "selectedSize": "选中大小: {size}",
+    "freeSpace": "剩余空间: {size}",
     "toggleTheme": "切换主题",
     "about": "关于"
   },

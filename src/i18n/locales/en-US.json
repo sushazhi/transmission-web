@@ -170,6 +170,7 @@
     "download": "↓ Download: {rate} ({limit})",
     "totalSize": "Total Size: {size}",
     "selectedSize": "Selected Size: {size}",
+    "freeSpace": "Free Space: {size}",
     "toggleTheme": "Toggle Theme",
     "about": "About"
   },

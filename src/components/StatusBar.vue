@@ -77,26 +77,34 @@ const selectedSize = computed(() => {
 })
 
 const limit = computed(() => {
-  const downRateLimit =
-    session.value !== undefined && session.value !== null
-      ? session.value['alt-speed-enabled'] === true
-        ? (session.value['alt-speed-down'] as number)
-        : session.value['speed-limit-down-enabled'] === true
-          ? (session.value['speed-limit-down'] as number)
-          : -1
+  // 提前判断 session，不存在则返回默认值
+  if (!session.value) {
+    return {
+      downRateLimit: -1,
+      upRateLimit: -1,
+      freeSpace: 0
+    }
+  }
+
+  // session 存在，进行实际的逻辑判断
+  const downRateLimit = session.value['alt-speed-enabled']
+    ? (session.value['alt-speed-down'] as number)
+    : session.value['speed-limit-down-enabled']
+      ? (session.value['speed-limit-down'] as number)
       : -1
-  const upRateLimit =
-    session.value !== undefined && session.value !== null
-      ? session.value['alt-speed-enabled'] === true
-        ? (session.value['alt-speed-up'] as number)
-        : session.value['speed-limit-up-enabled'] === true
-          ? (session.value['speed-limit-up'] as number)
-          : -1
+
+  const upRateLimit = session.value['alt-speed-enabled']
+    ? (session.value['alt-speed-up'] as number)
+    : session.value['speed-limit-up-enabled']
+      ? (session.value['speed-limit-up'] as number)
       : -1
+
+  const freeSpace = session.value['download-dir-free-space'] || 0
 
   return {
     downRateLimit,
-    upRateLimit
+    upRateLimit,
+    freeSpace
   }
 })
 
@@ -135,7 +143,8 @@ const allTags = computed(() => [
   { text: $t('statusBar.totalSize', { size: formatSize(totalSize.value) }), type: 'info' as const },
   ...(selectedSize.value > 0
     ? [{ text: $t('statusBar.selectedSize', { size: formatSize(selectedSize.value) }), type: 'info' as const }]
-    : [])
+    : []),
+  { text: $t('statusBar.freeSpace', { size: formatSize(limit.value.freeSpace) }), type: 'info' as const }
 ])
 </script>
 
