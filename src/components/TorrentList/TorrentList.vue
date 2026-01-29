@@ -82,13 +82,11 @@ function onRowClick(e: MouseEvent | TouchEvent) {
     torrentStore.selectRange(index)
   } else if ((isMac() && isCmd) || (!isMac && isCtrl)) {
     torrentStore.toggleSelectedKey(torrentId)
-    torrentStore.setLastSelectedIndex(index)
   } else {
     if (torrentStore.mapSelectedKeys[torrentId]) {
       return
     }
     torrentStore.setSelectedKeys([torrentId])
-    torrentStore.setLastSelectedIndex(index)
   }
 }
 
@@ -111,7 +109,6 @@ function onRowContextMenu(e: MouseEvent) {
   // 只有未选中时才加入多选集合，已选中时不做任何操作
   if (!torrentStore.selectedKeys.includes(torrentId)) {
     torrentStore.setSelectedKeys([torrentId])
-    torrentStore.setLastSelectedIndex(torrentId)
   }
   showDropdown.value = true
   rowMenuX.value = e.clientX

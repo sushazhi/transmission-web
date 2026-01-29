@@ -26,7 +26,7 @@
 import type { Torrent } from '@/api/rpc'
 import { useIsSmallLg } from '@/composables/useIsSmallScreen'
 import { useTorrentStore } from '@/store'
-import { defineProps, type Component } from 'vue'
+import { type Component } from 'vue'
 import { DynamicScrollerItem } from 'vue-virtual-scroller'
 import ByteRateCell from './cells/ByteRateCell.vue'
 import ByteSizeCell from './cells/ByteSizeCell.vue'

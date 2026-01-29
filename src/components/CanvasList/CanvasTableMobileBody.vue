@@ -326,11 +326,9 @@ function onRowClick(e: MouseEvent) {
     }
     if (toolbarStore.selectMode) {
       torrentStore.toggleSelectedKey(row.id)
-      torrentStore.setLastSelectedIndex(rowIndex)
       return
     } else {
       torrentStore.setSelectedKeys([row.id])
-      torrentStore.setLastSelectedIndex(rowIndex)
     }
   }
 }

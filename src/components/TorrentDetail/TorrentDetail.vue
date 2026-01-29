@@ -63,10 +63,10 @@ const { t: $t } = useI18n()
 const torrentStore = useTorrentStore()
 const selectedCount = computed(() => torrentStore.selectedKeys.length)
 const torrent = computed<Torrent | undefined>(() => {
-  if (torrentStore.selectedKeys.length === 0) {
+  if (torrentStore.lastSelectedKey === null) {
     return undefined
   }
-  const id = torrentStore.selectedKeys[0]
+  const id = torrentStore.lastSelectedKey
   return torrentStore.filterTorrents.find((t) => t.id === id)
 })
 

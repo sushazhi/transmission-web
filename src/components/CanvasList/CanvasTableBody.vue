@@ -319,18 +319,20 @@ function getRowIndex(e: MouseEvent | AnyTouchEvent) {
   const wrapper = e.target as HTMLElement
   const rect = wrapper.getBoundingClientRect()
   const clickY = 'clientY' in e ? e.clientY : e.y
+  const clickX = 'clientX' in e ? e.clientX : e.x
   const offsetY = clickY - rect.top - tableStore.viewTop
+  const offsetX = clickX - rect.left
   const heights = tableStore.cumulativeHeights.heights
   for (let i = 0; i < heights.length; i++) {
     if (offsetY < heights[i]) {
-      return i
+      return [i, offsetX, offsetY]
     }
   }
-  return null
+  return [null, offsetX, offsetY]
 }
 
 function onMouseMove(e: MouseEvent) {
-  const rowIndex = getRowIndex(e)
+  const [rowIndex] = getRowIndex(e)
   if (rowIndex === null) {
     return
   }
@@ -348,8 +350,8 @@ function onMouseLeave() {
   scheduleDraw(false)
 }
 
-function onRowClick(e: MouseEvent) {
-  const rowIndex = getRowIndex(e)
+function onRowClick(e: any) {
+  const [rowIndex, offsetX] = getRowIndex(e)
   if (showDropdown.value || rowIndex === null) {
     showDropdown.value = false
     return
@@ -362,19 +364,17 @@ function onRowClick(e: MouseEvent) {
     const isCtrl = e.ctrlKey
     const isCmd = e.metaKey
     const isShift = e.shiftKey
+    const isCheckbox = offsetX !== null && offsetX < checkboxWidth
     if (isShift) {
       // shift 连选时，无论当前行是否已选中，都以该行为新的终点重新计算范围
       torrentStore.selectRange(rowIndex)
     } else if ((isMac() && isCmd) || (!isMac && isCtrl)) {
       torrentStore.toggleSelectedKey(row.id)
-      torrentStore.setLastSelectedIndex(rowIndex)
     } else {
-      if (toolbarStore.selectMode) {
+      if (e.pointerType === 'touch' || isCheckbox) {
         torrentStore.toggleSelectedKey(row.id)
-        torrentStore.setLastSelectedIndex(rowIndex)
       } else {
         torrentStore.setSelectedKeys([row.id])
-        torrentStore.setLastSelectedIndex(rowIndex)
       }
     }
   }
@@ -382,8 +382,8 @@ function onRowClick(e: MouseEvent) {
 
 function onRowContextMenu(e: MouseEvent) {
   e.preventDefault()
-  const rowIndex = getRowIndex(e)
-  if (rowIndex === null) {
+  const [rowIndex] = getRowIndex(e)
+  if (rowIndex === null || e.ctrlKey) {
     return
   }
   if (tableStore.visibleStart <= rowIndex && rowIndex <= tableStore.visibleEnd) {
@@ -402,7 +402,7 @@ function onRowContextMenu(e: MouseEvent) {
 }
 
 function handleLongtap(e: AnyTouchEvent) {
-  const rowIndex = getRowIndex(e)
+  const [rowIndex] = getRowIndex(e)
   if (rowIndex === null) {
     return
   }

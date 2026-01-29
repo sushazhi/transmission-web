@@ -193,8 +193,8 @@ export const useTorrentStore = defineStore('torrent', () => {
     toggleSelectedKey,
     clearSelectedKeys,
     selectRange,
-    lastSelectedIndex,
-    setLastSelectedIndex
+    lastSelectedKey,
+    setLastSelectedKey
   } = useSelection(() => filterTorrents.value)
 
   async function fetchTorrents() {
@@ -217,7 +217,10 @@ export const useTorrentStore = defineStore('torrent', () => {
     if (selectedKeys.value.length === 0) {
       return
     }
-    const id = selectedKeys.value[0]
+    const id = lastSelectedKey.value
+    if (id === null) {
+      return
+    }
     const res = await rpc.torrentGet([...detailFields, ...listFields], [id], {
       params: {
         type: 'detail'
@@ -239,7 +242,7 @@ export const useTorrentStore = defineStore('torrent', () => {
   watch([search, statusFilter, labelsFilter, trackerFilter, errorStringFilter, downloadDirFilter], () => {
     clearSelectedKeys()
   })
-    ; (window as any).torrents = torrents
+  ;(window as any).torrents = torrents
   return {
     getColumnTitle,
     torrents,
@@ -263,8 +266,8 @@ export const useTorrentStore = defineStore('torrent', () => {
     toggleSelectedKey,
     clearSelectedKeys,
     selectRange,
-    lastSelectedIndex,
-    setLastSelectedIndex,
+    lastSelectedKey,
+    setLastSelectedKey,
     startPolling,
     stopPolling,
     columns,
