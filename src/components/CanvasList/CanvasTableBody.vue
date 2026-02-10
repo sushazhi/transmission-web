@@ -368,7 +368,7 @@ function onRowClick(e: any) {
     if (isShift) {
       // shift 连选时，无论当前行是否已选中，都以该行为新的终点重新计算范围
       torrentStore.selectRange(rowIndex)
-    } else if ((isMac() && isCmd) || (!isMac && isCtrl)) {
+    } else if ((isMac() && isCmd) || (!isMac() && isCtrl)) {
       torrentStore.toggleSelectedKey(row.id)
     } else {
       if (e.pointerType === 'touch' || isCheckbox) {

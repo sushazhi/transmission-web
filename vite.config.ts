@@ -7,10 +7,15 @@ import { fileURLToPath, URL } from 'node:url'
 import svgLoader from 'vite-svg-loader'
 import AutoImport from 'unplugin-auto-import/vite'
 import fs from 'node:fs'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
-  const base = env.VITE_BASE_URL || ''
+  // Windows下路径处理：确保以/开头且不包含Windows路径
+  let base = env.VITE_BASE_URL || '/transmission/web'
+  if (base.includes('Program Files') || base.includes('\\')) {
+    base = '/transmission/web'
+  }
 
   // 读取 package.json 中的版本号
   const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'))
@@ -54,6 +59,12 @@ export default defineConfig(({ mode }) => {
       }
     },
     plugins: [
+      nodePolyfills({
+        include: ['buffer'],
+        globals: {
+          Buffer: true
+        }
+      }),
       vue(),
       svgLoader(),
       Unocss(),
@@ -76,7 +87,7 @@ export default defineConfig(({ mode }) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
       },
       proxy: {
         '/transmission/rpc': {

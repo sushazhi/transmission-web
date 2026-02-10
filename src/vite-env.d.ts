@@ -3,6 +3,8 @@
 
 declare module 'vue-virtual-scroller'
 
+// Global variables for external libraries
+
 // 全局版本号变量
 declare const __APP_VERSION__: string
 

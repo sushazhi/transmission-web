@@ -10,7 +10,7 @@
     <n-el class="add-dialog-content">
       <n-form :model="form" :label-placement="labelType" :label-width="labelType === 'top' ? undefined : 120">
         <n-form-item :label="$t('addDialog.torrentFile')" required v-if="props.type === 'file'">
-          <n-upload :max="1" accept=".torrent" @change="onFileChange">
+          <n-upload :max="50" multiple accept=".torrent" @change="onFileChange">
             <n-button>{{ $t('addDialog.selectFile') }}</n-button>
           </n-upload>
         </n-form-item>
@@ -62,10 +62,12 @@
       </n-form>
     </n-el>
     <template #action>
-      <n-button @click="onCancel" :loading="loading">{{ $t('common.cancel') }}</n-button>
-      <n-button type="primary" @click="onConfirm" :loading="loading" :disabled="!form.metainfo && !magnetLink">{{
-        $t('common.add')
-      }}</n-button>
+      <div class="flex gap-2 w-full justify-end">
+        <n-button @click="onCancel" :loading="loading">{{ $t('common.cancel') }}</n-button>
+        <n-button type="primary" @click="onConfirm" :loading="loading" :disabled="!canAdd">{{
+          $t('common.add')
+        }}</n-button>
+      </div>
     </template>
   </n-modal>
 </template>
@@ -101,6 +103,20 @@ const form = reactive<TorrentAddArgs>({
   sequential_download: false
 })
 
+// 判断添加按钮是否可用
+const canAdd = computed(() => {
+  if (props.type === 'file') {
+    // 文件模式：需要选择了文件且选择了下载目录
+    return metainfoList.value.length > 0 && form['download-dir']
+  } else {
+    // 磁力链接模式：需要输入了磁力链接
+    return magnetLink.value.trim().length > 0
+  }
+})
+
+// 多文件上传的 metainfo 列表
+const metainfoList = ref<string[]>([])
+
 const bandwidthPriorityOptions = computed(() => [
   { label: $t('priority.low'), value: -1 },
   { label: $t('priority.normal'), value: 0 },
@@ -124,17 +140,18 @@ const labelsOptions = computed(() =>
     }))
 )
 
-async function onFileChange(data: { file: UploadFileInfo }) {
-  const rawFile = data.file.file as File | undefined
-  if (!rawFile) {
+async function onFileChange(data: { file: UploadFileInfo; fileList: UploadFileInfo[] }) {
+  // 支持多文件上传
+  const files = data.fileList.map((f) => f.file).filter((f): f is File => f !== undefined)
+  if (files.length === 0) {
+    metainfoList.value = []
     return
   }
   try {
-    const b64 = await readLocalTorrent(rawFile)
-    form.metainfo = b64
+    metainfoList.value = await Promise.all(files.map((f) => readLocalTorrent(f)))
   } catch {
     message.error($t('addDialog.readFileFailed'))
-    form.metainfo = ''
+    metainfoList.value = []
   }
 }
 
@@ -167,24 +184,20 @@ async function addTask(metainfo: string, filename?: string) {
       bandwidthPriority: form.bandwidthPriority,
       sequential_download: form.sequential_download
     })
-    show.value = false
     console.debug('添加种子', res)
     if (res.arguments['torrent-duplicate']) {
-      message.warning($t('addDialog.torrentExists'))
-      return
-    } else {
-      message.success($t('addDialog.addSuccess'))
-      await sleep(1000)
-      await torrentStore.fetchTorrents()
+      return { success: false, duplicate: true }
     }
-  } catch {
-    message.error($t('addDialog.addFailed'))
+    return { success: true }
+  } catch (error) {
+    console.error('添加种子失败', error)
+    return { success: false, error }
   }
 }
 
 async function onConfirm() {
   if (props.type === 'file') {
-    if (!form.metainfo) {
+    if (!metainfoList.value || metainfoList.value.length === 0) {
       message.error($t('addDialog.pleaseSelectFile'))
       return
     }
@@ -194,7 +207,21 @@ async function onConfirm() {
     }
     try {
       loading.value = true
-      await addTask(form.metainfo)
+      const results = await Promise.all(
+        metainfoList.value.map(async (metainfo) => {
+          return await addTask(metainfo)
+        })
+      )
+      // 检查是否全部重复
+      const allDuplicate = results.every((r) => r.duplicate)
+      if (allDuplicate) {
+        message.warning($t('addDialog.torrentExists'))
+      } else {
+        message.success($t('addDialog.addSuccess'))
+        await sleep(1000)
+        await torrentStore.fetchTorrents()
+      }
+      show.value = false
     } catch {
     } finally {
       loading.value = false
@@ -205,14 +232,26 @@ async function onConfirm() {
       return
     }
     // 解析磁力链接
-    const magnetLinks = magnetLink.value.split('\n').map((item) => item.trim())
+    const magnetLinks = magnetLink.value
+      .split('\n')
+      .map((item) => item.trim())
+      .filter(Boolean)
     try {
       loading.value = true
-      await Promise.all(
-        magnetLinks.map(async (magnetLink) => {
-          return await addTask('', magnetLink)
+      const results = await Promise.all(
+        magnetLinks.map(async (magnet) => {
+          return await addTask('', magnet)
         })
       )
+      const allDuplicate = results.every((r) => r.duplicate)
+      if (allDuplicate) {
+        message.warning($t('addDialog.torrentExists'))
+      } else {
+        message.success($t('addDialog.addSuccess'))
+        await sleep(1000)
+        await torrentStore.fetchTorrents()
+      }
+      show.value = false
     } catch (error) {
       console.error(error)
     } finally {
@@ -232,6 +271,7 @@ watch(show, (v) => {
       bandwidthPriority: undefined,
       sequential_download: false
     })
+    metainfoList.value = []
     magnetLink.value = ''
   }
 })

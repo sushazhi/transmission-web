@@ -1,10 +1,24 @@
 <template>
-  <div class="files-tab" style="min-width: 1024px">
+  <div class="files-tab" :class="{ 'mobile-view': isMobile }">
     <div class="title">
-      <n-text class="text-xs">
-        {{ t('torrentDetail.files.fileCount') }}: {{ totalFiles }} | {{ t('torrentDetail.files.selectedDownload') }}: {{ selectedFiles }} | {{ t('torrentDetail.files.totalSize') }}: {{ formatSize(totalSize) }}
-      </n-text>
-      <div class="flex gap-2">
+      <div class="file-info">
+        <n-text class="text-xs">
+          {{ t('torrentDetail.files.fileCount') }}: {{ totalFiles }} | {{ t('torrentDetail.files.selectedDownload') }}:
+          {{ selectedFiles }} | {{ t('torrentDetail.files.totalSize') }}: {{ formatSize(totalSize) }}
+        </n-text>
+      </div>
+      <div class="action-bar">
+        <n-input
+          v-model:value="fileSearch"
+          :placeholder="t('common.searchPlaceholder')"
+          clearable
+          :size="isMobile ? 'medium' : 'small'"
+          :style="{ width: isMobile ? '100%' : '200px' }"
+        >
+          <template #prefix>
+            <n-icon><SearchIcon /></n-icon>
+          </template>
+        </n-input>
         <n-button size="small" @click="selectAll">{{ t('torrentDetail.files.selectAll') }}</n-button>
         <n-dropdown :options="priorityOptions" @select="handleBatchPriority" placement="bottom-end">
           <n-button size="small">{{ t('torrentDetail.files.batchSetPriority') }}</n-button>
@@ -44,12 +58,14 @@ import { getPriorityString, type PriorityNumberType } from '@/types/tr'
 import type { TreeOption } from 'naive-ui'
 import { h, computed, ref, watch } from 'vue'
 import { NProgress, NTag, NDropdown, NButton, useMessage, NText, NTree } from 'naive-ui'
-import { FolderOutline, DocumentOutline } from '@vicons/ionicons5'
+import { FolderOutline, DocumentOutline, Search as SearchIcon } from '@vicons/ionicons5'
 import { priorityOptions, priorityTagColorConfig } from '@/components/AppHeader/priority'
 import { useTorrentStore } from '@/store'
 import { useI18n } from 'vue-i18n'
+import { useIsSmallScreen } from '@/composables/useIsSmallScreen'
 
 const { t } = useI18n()
+const isMobile = useIsSmallScreen()
 
 interface FileTreeNode extends TreeOption {
   key: string
@@ -68,6 +84,7 @@ const props = defineProps<{ torrent: Torrent }>()
 const message = useMessage()
 const treeRef = ref()
 const torrentStore = useTorrentStore()
+const fileSearch = ref('')
 
 // 响应式数据
 const checkedKeys = ref<string[]>([])
@@ -80,12 +97,19 @@ const treeData = computed(() => {
 
   const files = props.torrent.files
   const fileStats = props.torrent.fileStats
+  const searchTerm = fileSearch.value.toLowerCase()
+
   const root: FileTreeNode[] = []
   const pathMap = new Map<string, FileTreeNode>()
 
   files.forEach((file, index) => {
     const stat = fileStats[index]
     if (!stat) {
+      return
+    }
+
+    // 过滤：如果搜索词不为空，只显示匹配的文件/目录
+    if (searchTerm && !file.name.toLowerCase().includes(searchTerm)) {
       return
     }
 
@@ -339,7 +363,10 @@ const handleBatchPriority = async (priority: number) => {
     })
     torrentStore.fetchDetails()
     message.success(
-      t('torrentDetail.files.prioritySet', { count: selectedIndices.length, priority: getPriorityString(priority as PriorityNumberType) })
+      t('torrentDetail.files.prioritySet', {
+        count: selectedIndices.length,
+        priority: getPriorityString(priority as PriorityNumberType)
+      })
     )
   } catch (error) {
     console.error('设置优先级失败:', error)
@@ -366,7 +393,9 @@ const handleFilePriority = async (fileIndex: number, priority: number) => {
     })
     torrentStore.fetchDetails()
 
-    message.success(t('torrentDetail.files.filePrioritySet', { priority: getPriorityString(priority as PriorityNumberType) }))
+    message.success(
+      t('torrentDetail.files.filePrioritySet', { priority: getPriorityString(priority as PriorityNumberType) })
+    )
   } catch (error) {
     console.error('设置文件优先级失败:', error)
     message.error(t('torrentDetail.files.setFilePriorityFailed'))
@@ -378,20 +407,70 @@ const handleFilePriority = async (fileIndex: number, priority: number) => {
 .files-tab {
   overflow: hidden;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+
   .title {
-    flex-grow: 0;
-    padding: 4px 16px;
+    flex-shrink: 0;
+    padding: 8px 16px;
     display: flex;
-    width: 100%;
+    align-items: center;
     justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+
+    .file-info {
+      flex-shrink: 0;
+    }
+
+    .action-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      flex: 1;
+      justify-content: flex-end;
+    }
   }
+
   .content {
-    position: absolute;
-    width: 100%;
-    height: calc(100% - 36px);
-    left: 0;
-    top: 36px;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
   }
+
+  // 移动端布局
+  &.mobile-view {
+    .title {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 8px;
+
+      .file-info {
+        margin-bottom: 4px;
+      }
+
+      .action-bar {
+        justify-content: flex-start;
+        gap: 8px;
+
+        > .n-input {
+          flex: 2;
+          min-width: 0;
+        }
+
+        > .n-button {
+          flex: 0 0 auto;
+          min-width: 0;
+          padding: 0 8px;
+        }
+      }
+    }
+
+    .content {
+      padding: 0 8px 8px;
+    }
+  }
+
   :deep(.n-tree) {
     .n-tree-node-content {
       height: 32px;
