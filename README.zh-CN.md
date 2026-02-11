@@ -177,7 +177,15 @@ pnpm dev
 ### 生产环境构建
 
 ```bash
+# 默认构建（base 路径为 /）
 pnpm build
+
+# 构建 Transmission Web 界面（设置 base 路径为 /transmission/web）
+# Windows PowerShell
+$env:VITE_BASE_URL='/transmission/web'; pnpm build
+
+# Linux/macOS
+VITE_BASE_URL=/transmission/web pnpm build
 ```
 
 ## 📁 项目结构

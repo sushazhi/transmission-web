@@ -12,9 +12,9 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
   // Windows下路径处理：确保以/开头且不包含Windows路径
-  let base = env.VITE_BASE_URL || '/transmission/web'
+  let base = env.VITE_BASE_URL || '/'
   if (base.includes('Program Files') || base.includes('\\')) {
-    base = '/transmission/web'
+    base = '/'
   }
 
   // 读取 package.json 中的版本号

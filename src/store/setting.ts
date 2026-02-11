@@ -51,7 +51,9 @@ export const useSettingStore = defineStore('setting', () => {
       },
       menuExpandedKeys: ['status', 'labels', 'dir'],
       // 忽略域名中的部分前缀
-      ignoredTrackerPrefixes: ['t', 'tr', 'tk', 'tracker', 'bt', 'open', 'opentracker', 'pt']
+      ignoredTrackerPrefixes: ['t', 'tr', 'tk', 'tracker', 'bt', 'open', 'opentracker', 'pt'],
+      // 双击侧边栏选中该类型所有种子
+      enableDoubleClickSelect: true
     },
     localStorage,
     { mergeDefaults: true, deep: true, writeDefaults: true }

@@ -237,6 +237,7 @@
   "otherSettings": {
     "title": "Other Settings",
     "singleLine": "Single Line Display",
+    "enableDoubleClickSelect": "Double-click sidebar to select all torrents of that type",
     "enableScript": "Enable Torrent Completion Script",
     "scriptPlaceholder": "Whether to enable torrent completion script",
     "defaultTrackers": "Default Tracker List",
