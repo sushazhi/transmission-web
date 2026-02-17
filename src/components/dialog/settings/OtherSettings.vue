@@ -6,6 +6,9 @@
       <n-form-item :label="$t('otherSettings.singleLine')">
         <n-switch v-model:value="form['single-line']" />
       </n-form-item>
+      <n-form-item :label="$t('otherSettings.enableDoubleClickSelect')">
+        <n-switch v-model:value="settingStore.setting.enableDoubleClickSelect" />
+      </n-form-item>
       <n-form-item>
         <template #label>
           <n-checkbox v-model:checked="form['script-torrent-done-enabled']">{{

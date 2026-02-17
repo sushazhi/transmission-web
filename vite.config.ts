@@ -6,6 +6,7 @@ import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 import { fileURLToPath, URL } from 'node:url'
 import svgLoader from 'vite-svg-loader'
 import AutoImport from 'unplugin-auto-import/vite'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import fs from 'node:fs'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -68,6 +69,13 @@ export default defineConfig(({ mode }) => {
       Components({
         resolvers: [NaiveUiResolver()],
         dts: true
+      }),
+      nodePolyfills({
+        // 全局启用 Buffer polyfill
+        globals: {
+          Buffer: true,
+          global: true
+        }
       })
     ],
     server: {
@@ -76,7 +84,7 @@ export default defineConfig(({ mode }) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
       },
       proxy: {
         '/transmission/rpc': {

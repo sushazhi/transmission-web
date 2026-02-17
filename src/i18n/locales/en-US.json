@@ -113,7 +113,11 @@
     "version": "Version: {version}",
     "clientVersion": "Client Version: {version}",
     "server": "Server: {server}",
-    "author": "Author"
+    "author": "Author",
+    "checkUpdate": "Check for Updates",
+    "updateAvailable": "New version available: v{version}",
+    "updateNoNew": "You are using the latest version",
+    "updateFailed": "Failed to check for updates"
   },
   "settingsDialog": {
     "title": "Settings"
@@ -168,9 +172,13 @@
     "server": "Server: {server}",
     "upload": "↑ Upload: {rate} ({limit})",
     "download": "↓ Download: {rate} ({limit})",
+    "uploadShort": "↑",
+    "downloadShort": "↓",
     "totalSize": "Total Size: {size}",
+    "totalSizeShort": "Size:",
     "selectedSize": "Selected Size: {size}",
     "freeSpace": "Free Space: {size}",
+    "freeSpaceShort": "Free:",
     "toggleTheme": "Toggle Theme",
     "about": "About"
   },
@@ -229,6 +237,7 @@
   "otherSettings": {
     "title": "Other Settings",
     "singleLine": "Single Line Display",
+    "enableDoubleClickSelect": "Double-click sidebar to select all torrents of that type",
     "enableScript": "Enable Torrent Completion Script",
     "scriptPlaceholder": "Whether to enable torrent completion script",
     "defaultTrackers": "Default Tracker List",
@@ -361,6 +370,7 @@
   "torrentDetail": {
     "selectedItems": "Selected {count} items",
     "noSelection": "No tasks selected",
+    "fileSearchPlaceholder": "Search files...",
     "general": {
       "general": "General",
       "transmissionInfo": "Transmission Info",
@@ -416,6 +426,7 @@
     },
     "peers": {
       "peers": "Peers",
+      "country": "Country/Region",
       "connectionOverview": "Connection Overview",
       "uploadingToUs": "Uploading to Us",
       "downloadingFromUs": "Downloading from Us",

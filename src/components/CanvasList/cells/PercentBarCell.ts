@@ -1,5 +1,6 @@
 import type { Torrent } from '@/api/rpc'
 import type { ColumnConfig } from '@/composables/useColumns'
+import { Status } from '@/types/tr'
 import { PADDING_X } from '../store/utils'
 import { roundRect, roundRectLeft } from './utils'
 import { useSettingStore } from '@/store'
@@ -20,11 +21,17 @@ export default function renderPercentBarCell(
   const barX = x + PADDING_X
   const barY = y + (rowHeight - height) / 2
   let percent = Math.round(value * 100)
-  // 目前 返回的数据中percentDone在下载的时候一直是 0
-  const sizeWhenDone = Number(row.sizeWhenDone)
-  const downloadedEver = Number(row.downloadedEver)
-  if (downloadedEver > 0) {
-    percent = Math.max(percent, Math.min(Math.round((downloadedEver / sizeWhenDone) * 100), 100))
+  // 校验状态：使用校验进度
+  if (row.status === Status.verifying || row.status === Status.queuedToVerify) {
+    percent = Math.round((row.recheckProgress || 0) * 100)
+  } else {
+    // 下载状态：计算下载进度
+    // 目前 返回的数据中percentDone在下载的时候一直是 0
+    const sizeWhenDone = Number(row.sizeWhenDone)
+    const downloadedEver = Number(row.downloadedEver)
+    if (downloadedEver > 0) {
+      percent = Math.max(percent, Math.min(Math.round((downloadedEver / sizeWhenDone) * 100), 100))
+    }
   }
   percent = Math.min(Math.max(percent, 0), 100)
   const percentWidth = Math.max((width * percent) / 100, 0)

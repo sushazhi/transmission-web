@@ -5,6 +5,7 @@ import { useSelection } from '@/composables/useSelection'
 import { useSettingStore } from '@/store/setting'
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
+import { Status } from '@/types/tr'
 import {
   detailFilterOptions,
   isFilterTorrents,
@@ -42,6 +43,7 @@ const listFields = [
   'queuePosition',
   'rateDownload',
   'rateUpload',
+  'recheckProgress',
   'secondsSeeding',
   'sizeWhenDone',
   'status',
@@ -65,7 +67,6 @@ const listFields = [
 
 const detailFields = [
   'hashString',
-  'recheckProgress',
   'files',
   'fileStats',
   'peers',
@@ -82,6 +83,13 @@ export const useTorrentStore = defineStore('torrent', () => {
   // 排序相关
   const sortKey = ref<string>('id') // 默认按添加时间排序
   const sortOrder = ref<'asc' | 'desc'>('desc') // 默认降序
+
+  // Torrent 详情标签页状态
+  const detailTab = ref<'general' | 'files' | 'peers' | 'tracker'>('general')
+
+  function setDetailTab(tab: 'general' | 'files' | 'peers' | 'tracker') {
+    detailTab.value = tab
+  }
   function setSort(key: string) {
     if (sortKey.value === key) {
       sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
@@ -206,6 +214,7 @@ export const useTorrentStore = defineStore('torrent', () => {
       let item = processTorrent(t)
       const index = computedData.value.mapTorrentsIndex[item.id]
       if (index >= 0) {
+        // 合并新旧数据，保留旧数据的某些字段，但使用新数据中的所有字段
         item = Object.assign({}, old[index], item)
       }
       return item
@@ -283,6 +292,8 @@ export const useTorrentStore = defineStore('torrent', () => {
     mapColumnWidth,
     fetchDetails,
     startDetailPolling,
-    stopDetailPolling
+    stopDetailPolling,
+    detailTab,
+    setDetailTab
   }
 })

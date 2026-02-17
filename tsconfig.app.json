@@ -1,9 +1,5 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "target": "ES2023",
-  "lib": [
-    "ES2023"
-  ],
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     /* Linting */
@@ -12,14 +8,14 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
+    "typeRoots": ["./node_modules/@types", "./src"],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     }
   },
   "include": [
     "src/**/*.ts",
+    "src/types/*.d.ts",
     "src/auto-imports.d.ts",
     "src/vite-env.d.ts",
     "src/**/*.tsx",

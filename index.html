@@ -1,83 +1,85 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
 
-<head>
-  <meta charset="UTF-8" />
+    <!-- 核心viewport设置 - 针对PWA优化 -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no"
+    />
 
-  <!-- 核心viewport设置 - 针对PWA优化 -->
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
+    <!-- 防止缩放和选择，提供原生应用体验 -->
+    <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
 
-  <!-- 防止缩放和选择，提供原生应用体验 -->
-  <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
+    <!-- 基础信息 -->
+    <meta name="description" content="Transmission - web ui" />
+    <meta name="author" content="Transmission" />
+    <meta name="keywords" content="Transmission,web ui" />
 
-  <!-- 基础信息 -->
-  <meta name="description" content="Transmission - web ui" />
-  <meta name="author" content="Transmission" />
-  <meta name="keywords" content="Transmission,web ui" />
+    <!-- 安全和隐私 -->
+    <meta name="Robots" content="noindex,nofollow,noarchive" />
+    <meta name="referrer" content="no-referrer" />
 
-  <!-- 安全和隐私 -->
-  <meta name="Robots" content="noindex,nofollow,noarchive" />
-  <meta name="referrer" content="no-referrer" />
+    <!-- PWA - 基础图标 -->
+    <link rel="icon" type="image/svg+xml" href="/transmission.svg" sizes="any" />
 
-  <!-- PWA - 基础图标 -->
-  <link rel="icon" type="image/svg+xml" href="/transmission.svg" sizes="any" />
+    <!-- iOS Safari PWA 优化 -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- <link rel="apple-touch-icon-precomposed" href="/apple-touch-icon-precomposed.png" /> -->
+    <!-- iOS Safari 全屏模式 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Transmission" />
 
-  <!-- iOS Safari PWA 优化 -->
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  <!-- <link rel="apple-touch-icon-precomposed" href="/apple-touch-icon-precomposed.png" /> -->
-  <!-- iOS Safari 全屏模式 -->
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Transmission" />
+    <!-- iOS Safari 防止自动识别 -->
+    <meta name="apple-mobile-web-app-orientations" content="portrait" />
 
-  <!-- iOS Safari 防止自动识别 -->
-  <meta name="apple-mobile-web-app-orientations" content="portrait" />
+    <!-- Android Chrome PWA 优化 -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-title" content="Transmission" />
 
-  <!-- Android Chrome PWA 优化 -->
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="mobile-web-app-title" content="Transmission" />
+    <!-- Microsoft Windows PWA -->
+    <meta name="msapplication-TileColor" content="#101014" />
+    <meta name="msapplication-TileImage" content="/android-chrome-192x192.png" />
+    <meta name="msapplication-config" content="none" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="msapplication-navbutton-color" content="#101014" />
 
-  <!-- Microsoft Windows PWA -->
-  <meta name="msapplication-TileColor" content="#101014" />
-  <meta name="msapplication-TileImage" content="/android-chrome-192x192.png" />
-  <meta name="msapplication-config" content="none" />
-  <meta name="msapplication-tap-highlight" content="no" />
-  <meta name="msapplication-navbutton-color" content="#101014" />
+    <!-- 主题色彩 - 适配深色和浅色模式 -->
+    <meta name="theme-color" content="#101014" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F4F5FA" media="(prefers-color-scheme: light)" />
+    <meta name="color-scheme" content="dark light" />
 
-  <!-- 主题色彩 - 适配深色和浅色模式 -->
-  <meta name="theme-color" content="#101014" media="(prefers-color-scheme: dark)" />
-  <meta name="theme-color" content="#F4F5FA" media="(prefers-color-scheme: light)" />
-  <meta name="color-scheme" content="dark light" />
+    <!-- 屏幕方向锁定 -->
+    <meta name="screen-orientation" content="portrait" />
+    <meta name="x5-orientation" content="portrait" />
+    <meta name="x5-fullscreen" content="true" />
+    <meta name="x5-page-mode" content="app" />
 
-  <!-- 屏幕方向锁定 -->
-  <meta name="screen-orientation" content="portrait" />
-  <meta name="x5-orientation" content="portrait" />
-  <meta name="x5-fullscreen" content="true" />
-  <meta name="x5-page-mode" content="app" />
+    <!-- UC浏览器优化 -->
+    <meta name="browsermode" content="application" />
+    <meta name="wap-font-scale" content="no" />
 
-  <!-- UC浏览器优化 -->
-  <meta name="browsermode" content="application" />
-  <meta name="wap-font-scale" content="no" />
+    <!-- 360浏览器优化 -->
+    <meta name="renderer" content="webkit" />
 
-  <!-- 360浏览器优化 -->
-  <meta name="renderer" content="webkit" />
+    <!-- 触摸优化 -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="MobileOptimized" content="320" />
 
-  <!-- 触摸优化 -->
-  <meta name="HandheldFriendly" content="True" />
-  <meta name="MobileOptimized" content="320" />
+    <!-- 缓存控制 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Transmission</title>
+    <!-- Flag Icons CSS - CDN (自动选择最佳节点) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css" />
+  </head>
 
-  <!-- 缓存控制 -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <title>Transmission</title>
-</head>
-
-<body>
-  <div id="app"></div>
-  <script type="module" src="/src/main.ts"></script>
-</body>
-
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>

@@ -1,9 +1,14 @@
 <template>
   <footer :class="[$style.footer, props.class]">
     <div class="flex items-start gap-1 overflow-hidden flex-1 flex-wrap h-full py-[5px]">
-      <n-tag v-for="(item, i) in allTags" :key="i" :type="item.type" size="small">{{ item.text }}</n-tag>
+      <template v-if="isMobile">
+        <n-tag v-for="(item, i) in mobileTags" :key="i" :type="item.type" size="small">{{ item.text }}</n-tag>
+      </template>
+      <template v-else>
+        <n-tag v-for="(item, i) in allTags" :key="i" :type="item.type" size="small">{{ item.text }}</n-tag>
+      </template>
     </div>
-    <div class="flex items-center gap-1 flex-shrink-0 h-full" style="width: 64px">
+    <div class="flex items-center gap-1 h-full" :style="{ width: isMobile ? 'auto' : '64px' }">
       <n-button
         quaternary
         circle
@@ -37,6 +42,7 @@ import { useSessionStore, useSettingStore, useTorrentStore } from '@/store'
 import { formatSize, formatSpeed } from '@/utils'
 import { InformationCircle as InfoIcon, Moon as MoonIcon, Sunny as SunIcon } from '@vicons/ionicons5'
 import { useI18n } from 'vue-i18n'
+import { useIsSmallScreen } from '@/composables/useIsSmallScreen'
 
 const props = defineProps<{
   class?: string
@@ -46,6 +52,7 @@ const sessionStore = useSessionStore()
 const torrentStore = useTorrentStore()
 const settingStore = useSettingStore()
 const { t: $t } = useI18n()
+const isMobile = useIsSmallScreen()
 
 const session = computed(() => sessionStore.session)
 const torrents = computed(() => torrentStore.torrents)
@@ -146,6 +153,26 @@ const allTags = computed(() => [
     : []),
   { text: $t('statusBar.freeSpace', { size: formatSize(limit.value.freeSpace) }), type: 'info' as const }
 ])
+
+// 移动版精简显示 - 只显示上下传速度、种子大小、剩余空间
+const mobileTags = computed(() => {
+  const tags = []
+  // 上传速度
+  tags.push({
+    text: `${$t('statusBar.uploadShort')}${formatSpeed(computedFields.value.upRate)}`,
+    type: 'success' as const
+  })
+  // 下载速度
+  tags.push({
+    text: `${$t('statusBar.downloadShort')}${formatSpeed(computedFields.value.downRate)}`,
+    type: 'info' as const
+  })
+  // 种子大小
+  tags.push({ text: `${$t('statusBar.totalSizeShort')}${formatSize(totalSize.value)}`, type: 'info' as const })
+  // 剩余空间
+  tags.push({ text: `${$t('statusBar.freeSpaceShort')}${formatSize(limit.value.freeSpace)}`, type: 'info' as const })
+  return tags
+})
 </script>
 
 <style module lang="less">

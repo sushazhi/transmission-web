@@ -113,7 +113,11 @@
     "version": "版本: {version}",
     "clientVersion": "客户端版本: {version}",
     "server": "服务器: {server}",
-    "author": "作者"
+    "author": "作者",
+    "checkUpdate": "检查更新",
+    "updateAvailable": "有新版本可用: v{version}",
+    "updateNoNew": "当前已是最新版本",
+    "updateFailed": "检查更新失败"
   },
   "settingsDialog": {
     "title": "参数设置"
@@ -137,8 +141,8 @@
   },
   "status": {
     "stopped": "已暂停",
-    "queuedToVerify": "等待验证",
-    "verifying": "验证中",
+    "queuedToVerify": "等待检验",
+    "verifying": "检验中",
     "queuedToDownload": "等待下载",
     "downloading": "下载中",
     "queuedToSeed": "等待做种",
@@ -168,9 +172,13 @@
     "server": "服务器: {server}",
     "upload": "↑ 上传: {rate} ({limit})",
     "download": "↓ 下载: {rate} ({limit})",
+    "uploadShort": "↑",
+    "downloadShort": "↓",
     "totalSize": "文件总大小: {size}",
+    "totalSizeShort": "大小:",
     "selectedSize": "选中大小: {size}",
     "freeSpace": "剩余空间: {size}",
+    "freeSpaceShort": "剩余:",
     "toggleTheme": "切换主题",
     "about": "关于"
   },
@@ -229,6 +237,7 @@
   "otherSettings": {
     "title": "其他设置",
     "singleLine": "单行显示",
+    "enableDoubleClickSelect": "双击侧边栏选中该类型所有种子",
     "enableScript": "启用种子完成脚本",
     "scriptPlaceholder": "是否启用种子完成脚本",
     "defaultTrackers": "默认tracker列表",
@@ -361,6 +370,7 @@
   "torrentDetail": {
     "selectedItems": "已选择 {count} 项",
     "noSelection": "未选择任何任务",
+    "fileSearchPlaceholder": "搜索文件...",
     "general": {
       "general": "常规",
       "transmissionInfo": "传输信息",
@@ -416,6 +426,7 @@
     },
     "peers": {
       "peers": "用户",
+      "country": "国家/地区",
       "connectionOverview": "连接概览",
       "uploadingToUs": "正在向我们上传",
       "downloadingFromUs": "正在从我们下载",

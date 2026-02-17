@@ -120,9 +120,13 @@ export const isFilterTorrents = function (
   // === 2. 同时进行过滤判断 ===
   let shouldInclude = true
 
-  // 搜索过滤
-  if (search.value && !t.name.includes(search.value)) {
-    shouldInclude = false
+  // 搜索过滤（模糊搜索，不区分大小写，忽略 ". - / " 和空格）
+  if (search.value) {
+    const normalizedSearch = search.value.toLowerCase().replace(/[.\-/\s]/g, '')
+    const normalizedName = t.name.toLowerCase().replace(/[.\-/\s]/g, '')
+    if (!normalizedName.includes(normalizedSearch)) {
+      shouldInclude = false
+    }
   }
 
   // 状态过滤

@@ -4,6 +4,7 @@
     :options="dirMenuOptions"
     v-model:value="torrentStore.downloadDirFilter"
     v-model:expanded-keys="settingStore.menuExpandedKeys"
+    @update:value="handleMenuClick"
   />
 </template>
 <script setup lang="ts">
@@ -11,9 +12,14 @@ import { useTorrentStore, useSettingStore } from '@/store'
 import { renderIcon } from '@/utils'
 import { FileTray, Folder } from '@vicons/ionicons5'
 import { useI18n } from 'vue-i18n'
+import { useClickHandler } from '@/composables/useClickHandler'
+import { getMatchingTorrentIds } from '@/utils/torrentSelection'
+
 const torrentStore = useTorrentStore()
 const settingStore = useSettingStore()
 const { t: $t } = useI18n()
+const { handleClick } = useClickHandler()
+
 const dirMenuOptions = computed(() => {
   return [
     {
@@ -27,4 +33,28 @@ const dirMenuOptions = computed(() => {
     }
   ]
 })
+
+// 处理菜单点击
+function handleMenuClick(key: string) {
+  // 检查开关是否开启
+  if (!settingStore.setting.enableDoubleClickSelect) {
+    return
+  }
+
+  // 判断是否为双击
+  if (handleClick(key)) {
+    // 双击：切换选中该目录的所有种子
+    const ids = getMatchingTorrentIds(torrentStore.torrents, 'dir', key)
+    if (ids.length > 0) {
+      // 检查当前选中的种子是否全部都是该目录的种子
+      const allSelectedInType = torrentStore.selectedKeys.every((id) => ids.includes(id))
+      // 如果当前选中的都是该目录的种子，则清除选中；否则选中该目录的种子
+      if (allSelectedInType && torrentStore.selectedKeys.length > 0) {
+        torrentStore.clearSelectedKeys()
+      } else {
+        torrentStore.setSelectedKeys(ids)
+      }
+    }
+  }
+}
 </script>

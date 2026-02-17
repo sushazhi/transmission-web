@@ -17,7 +17,7 @@
         <IconButton v-if="closable" :icon="CloseIcon" @click="onClose" />
       </div>
     </div>
-    <n-tabs v-model:value="currentTab" type="line" :animated="true" class="detail-tabs">
+    <n-tabs v-model:value="torrentStore.detailTab" type="line" :animated="true" class="detail-tabs">
       <n-tab-pane name="general" :tab="$t('torrentDetail.general.general')" class="tab-pane">
         <GeneralTab v-if="torrent" :torrent="torrent" />
       </n-tab-pane>
@@ -39,6 +39,7 @@ import type { Torrent } from '@/api/rpc'
 import { useTorrentStore } from '@/store'
 import { CloseCircleOutline as CloseIcon } from '@vicons/ionicons5'
 import { useI18n } from 'vue-i18n'
+import { watch } from 'vue'
 
 interface Props {
   // 用于 PC 场景的固定高度（px），移动端抽屉中可忽略
@@ -70,7 +71,13 @@ const torrent = computed<Torrent | undefined>(() => {
   return torrentStore.filterTorrents.find((t) => t.id === id)
 })
 
-const currentTab = ref<'general' | 'files' | 'peers' | 'tracker'>('general')
+// 当 torrent 变化时重置标签页到 general
+watch(
+  () => torrentStore.lastSelectedKey,
+  () => {
+    torrentStore.setDetailTab('general')
+  }
+)
 
 const rootStyle = computed(() => {
   return props.height ? { height: `${props.height}px` } : {}
