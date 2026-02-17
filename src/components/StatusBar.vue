@@ -129,6 +129,11 @@ function onShowAbout() {
   showAbout.value = true
 }
 
+// 格式化速度限制，负数表示无限制
+const formatLimit = (limit: number) => {
+  return limit > 0 ? formatSpeed(limit * 1024) : $t('common.unlimited')
+}
+
 // tag 数据
 const allTags = computed(() => [
   { text: $t('statusBar.version', { version: session.value?.['version'] ?? '--' }), type: 'info' as const },
@@ -136,14 +141,14 @@ const allTags = computed(() => [
   {
     text: $t('statusBar.upload', {
       rate: formatSpeed(computedFields.value.upRate),
-      limit: formatSpeed(limit.value.upRateLimit * 1024)
+      limit: formatLimit(limit.value.upRateLimit)
     }),
     type: 'success' as const
   },
   {
     text: $t('statusBar.download', {
       rate: formatSpeed(computedFields.value.downRate),
-      limit: formatSpeed(limit.value.downRateLimit * 1024)
+      limit: formatLimit(limit.value.downRateLimit)
     }),
     type: 'info' as const
   },

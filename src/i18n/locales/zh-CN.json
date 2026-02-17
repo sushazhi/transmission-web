@@ -5,6 +5,7 @@
     "all": "全部 ({total})",
     "yes": "是",
     "no": "否",
+    "unlimited": "无限制",
     "addTorrent": "添加种子",
     "addMagnet": "磁力链接",
     "startTasks": "开始任务",

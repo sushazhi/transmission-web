@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { darkTheme } from 'naive-ui'
+import { darkTheme, zhCN, enUS, dateZhCN, dateEnUS } from 'naive-ui'
 import { useSettingStore } from './store'
 
 const settingStore = useSettingStore()
 const theme = computed(() => (settingStore.setting.theme === 'dark' ? darkTheme : null))
+const locale = computed(() => (settingStore.setting.language === 'zh-CN' ? zhCN : enUS))
+const dateLocale = computed(() => (settingStore.setting.language === 'zh-CN' ? dateZhCN : dateEnUS))
 
 watchEffect(() => {
   document.documentElement.setAttribute('data-theme', settingStore.setting.theme)
@@ -11,7 +13,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <n-config-provider :theme="theme">
+  <n-config-provider :theme="theme" :locale="locale" :date-locale="dateLocale">
     <n-global-style />
     <n-el :class="$style.container">
       <n-modal-provider>

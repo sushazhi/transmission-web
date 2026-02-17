@@ -190,6 +190,12 @@ async function onSave() {
       settingStore.setPolling(pollingForm.value)
     }
     settingStore.setting.singleLine = !!sessionForm.value['single-line']
+    // 同步更新默认 tracker 到本地设置
+    if (sessionForm.value['default-trackers'] !== undefined) {
+      settingStore.setting.defaultTrackers = sessionForm.value['default-trackers']
+        ? sessionForm.value['default-trackers'].split('\n').filter(Boolean)
+        : []
+    }
     await rpc.sessionSet(omit(sessionForm.value, ['single-line']))
     message.success($t('settings.saveSuccess'))
     emit('save-success')

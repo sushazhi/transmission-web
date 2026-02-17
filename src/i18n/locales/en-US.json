@@ -5,6 +5,7 @@
     "all": "All ({total})",
     "yes": "Yes",
     "no": "No",
+    "unlimited": "Unlimited",
     "addTorrent": "Add Torrent",
     "addMagnet": "Add Magnet Link",
     "startTasks": "Start Tasks",

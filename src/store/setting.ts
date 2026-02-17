@@ -56,7 +56,7 @@ export const useSettingStore = defineStore('setting', () => {
       enableDoubleClickSelect: true
     },
     localStorage,
-    { mergeDefaults: true, deep: true, writeDefaults: true }
+    { mergeDefaults: true, deep: true }
   )
   // 侧边栏宽度
   const sidebarWidth = useStorage('sidebarWidth', 224, undefined)
