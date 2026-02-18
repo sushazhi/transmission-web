@@ -8,7 +8,7 @@
     :x="props.x"
     :y="props.y"
     :width="180"
-    @update:show="(val) => emit('update:show', val)"
+    @update:show="onUpdateShow"
     class="p-0!"
     :animated="false"
   >
@@ -46,7 +46,9 @@ const props = defineProps<{
   x: number
   y: number
 }>()
-const emit = defineEmits(['update:show'])
+const emit = defineEmits<{
+  'update:show': [value: boolean]
+}>()
 
 const torrentStore = useTorrentStore()
 const { getColumnTitle } = torrentStore
@@ -58,7 +60,7 @@ function isChecked(key: string) {
 function toggle(key: string) {
   if (key === 'name') {
     return
-  } // 禁止操作 name 列
+  }
   torrentStore.toggleColumnVisible(key)
 }
 function onDragEnd(newList: { key: string; width: number; visible: boolean }[]) {
@@ -66,6 +68,9 @@ function onDragEnd(newList: { key: string; width: number; visible: boolean }[]) 
 }
 function getTitle(key: string) {
   return getColumnTitle(key)
+}
+function onUpdateShow(val: boolean) {
+  emit('update:show', val)
 }
 const close = (e: Event) => {
   const target = e.target as HTMLElement
@@ -99,8 +104,8 @@ onKeyStroke('Escape', () => {
   border-radius: 4px;
   transition: background 0.2s;
   user-select: none;
-  -webkit-touch-callout: none; /* iOS Safari */
-  -webkit-user-select: none; /* Safari */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
 
   &:hover {
     background: var(--table-color-hover, #232323);

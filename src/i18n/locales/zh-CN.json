@@ -148,7 +148,11 @@
     "labels": "用户标签",
     "error": "错误分布",
     "directory": "目录分布",
-    "tracker": "服务器分布"
+    "tracker": "服务器分布",
+    "statusFilterTitle": "状态过滤器",
+    "showSidebar": "开启侧边栏",
+    "hideSidebar": "关闭侧边栏",
+    "showGroupSize": "显示分组体积"
   },
   "status": {
     "stopped": "已暂停",
@@ -187,6 +191,7 @@
     "downloadShort": "↓",
     "totalSize": "文件总大小: {size}",
     "totalSizeShort": "大小:",
+    "groupSize": "分组大小: {size}",
     "selectedSize": "选中大小: {size}",
     "freeSpace": "剩余空间: {size}",
     "freeSpaceShort": "剩余:",
@@ -282,7 +287,7 @@
     "title": "其他设置",
     "fontSize": "字体大小",
     "singleLine": "单行显示",
-    "enableDoubleClickSelect": "双击侧边栏选中该类型所有种子",
+    "enableDoubleClickSelect": "双击全选分组",
     "enableScript": "启用种子完成脚本",
     "scriptPlaceholder": "是否启用种子完成脚本",
     "defaultTrackers": "默认tracker列表",
@@ -365,7 +370,8 @@
     "moveDown": "队列下移",
     "moveBottom": "队列置底",
     "changeTracker": "修改tracker",
-    "other": "修改限速等限制属性"
+    "other": "修改限速等限制属性",
+    "showCheckbox": "开启选择模式"
   },
   "columns": {
     "name": "名称",

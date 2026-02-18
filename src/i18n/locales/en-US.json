@@ -148,7 +148,11 @@
     "labels": "Labels",
     "error": "Errors",
     "directory": "Directory",
-    "tracker": "Tracker"
+    "tracker": "Tracker",
+    "statusFilterTitle": "Status Filter",
+    "showSidebar": "Show Sidebar",
+    "hideSidebar": "Hide Sidebar",
+    "showGroupSize": "Show Group Size"
   },
   "status": {
     "stopped": "Stopped",
@@ -187,6 +191,7 @@
     "downloadShort": "↓",
     "totalSize": "Total Size: {size}",
     "totalSizeShort": "Size:",
+    "groupSize": "Group Size: {size}",
     "selectedSize": "Selected Size: {size}",
     "freeSpace": "Free Space: {size}",
     "freeSpaceShort": "Free:",
@@ -282,7 +287,7 @@
     "title": "Other Settings",
     "fontSize": "Font Size",
     "singleLine": "Single Line Display",
-    "enableDoubleClickSelect": "Double-click sidebar to select all torrents of that type",
+    "enableDoubleClickSelect": "Double-click to select all in group",
     "enableScript": "Enable Torrent Completion Script",
     "scriptPlaceholder": "Whether to enable torrent completion script",
     "defaultTrackers": "Default Tracker List",
@@ -365,7 +370,8 @@
     "moveDown": "Move Down",
     "moveBottom": "Move to Bottom",
     "changeTracker": "Change Tracker",
-    "other": "Modify Speed Limits and Restrictions"
+    "other": "Modify Speed Limits and Restrictions",
+    "showCheckbox": "Enable Selection Mode"
   },
   "columns": {
     "name": "Name",

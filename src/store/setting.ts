@@ -55,7 +55,29 @@ export const useSettingStore = defineStore('setting', () => {
       // 双击侧边栏选中该类型所有种子
       enableDoubleClickSelect: true,
       // 字体大小
-      fontSize: 14
+      fontSize: 14,
+      // 侧边栏菜单显示配置
+      sidebarMenuVisible: {
+        status: true,
+        labels: true,
+        dir: true,
+        tracker: true,
+        error: true
+      },
+      // 状态过滤器显示配置
+      statusFilterVisible: {
+        downloading: true,
+        stopped: true,
+        completed: true,
+        verifying: true,
+        active: true,
+        inactive: true,
+        working: true,
+        error: true,
+        magnet: true
+      },
+      // 显示分组体积
+      showGroupSize: false
     },
     localStorage,
     { mergeDefaults: true, deep: true }

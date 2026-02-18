@@ -9,40 +9,38 @@ export interface ColumnConfig {
 }
 
 export const allColumns = [
-  { key: 'name', fixed: true, minWidth: 350 },
-  { key: 'totalSize', minWidth: 90 },
-  { key: 'sizeWhenDone', minWidth: 140 },
-  { key: 'leftUntilDone', minWidth: 90 },
-  { key: 'haveValid', minWidth: 90 },
-  { key: 'downloadedEver', minWidth: 116 },
-  { key: 'uploadedEver', minWidth: 100 },
-  { key: 'uploadedDownloaded', minWidth: 130 },
-  { key: 'percentDone', minWidth: 120 },
-  { key: 'rateDownload', minWidth: 115 },
-  { key: 'rateUpload', minWidth: 100 },
-  { key: 'status', minWidth: 80 },
-  { key: 'addedDate', minWidth: 190 },
-  { key: 'peersSendingToUs', minWidth: 95 },
-  { key: 'peersGettingFromUs', minWidth: 80 },
-  { key: 'eta', minWidth: 85 },
-  { key: 'uploadRatio', minWidth: 80 },
-  // 格式化后的 tracker
-  { key: 'cachedMainTracker', minWidth: 150 },
-  // 格式化后的 tracker 状态
-  { key: 'cachedTrackerStatus', minWidth: 125 },
-  { key: 'doneDate', minWidth: 190 },
-  { key: 'activityDate', minWidth: 190 },
-  { key: 'downloadDir', minWidth: 180 },
-  { key: 'bandwidthPriority', minWidth: 100 },
-  { key: 'id', minWidth: 80 },
-  { key: 'queuePosition', minWidth: 80 },
-  { key: 'isPrivate', minWidth: 60 },
-  { key: 'labels', minWidth: 100 },
-  { key: 'secondsSeeding', minWidth: 120 },
-  { key: 'group', minWidth: 95 },
-  { key: 'file-count', minWidth: 90 },
-  { key: 'pieceCount', minWidth: 90 },
-  { key: 'metadataPercentComplete', minWidth: 150 }
+  { key: 'name', fixed: true },
+  { key: 'totalSize' },
+  { key: 'sizeWhenDone' },
+  { key: 'leftUntilDone' },
+  { key: 'haveValid' },
+  { key: 'downloadedEver' },
+  { key: 'uploadedEver' },
+  { key: 'uploadedDownloaded' },
+  { key: 'percentDone' },
+  { key: 'rateDownload' },
+  { key: 'rateUpload' },
+  { key: 'status' },
+  { key: 'addedDate' },
+  { key: 'peersSendingToUs' },
+  { key: 'peersGettingFromUs' },
+  { key: 'eta' },
+  { key: 'uploadRatio' },
+  { key: 'cachedMainTracker' },
+  { key: 'cachedTrackerStatus' },
+  { key: 'doneDate' },
+  { key: 'activityDate' },
+  { key: 'downloadDir' },
+  { key: 'bandwidthPriority' },
+  { key: 'id' },
+  { key: 'queuePosition' },
+  { key: 'isPrivate' },
+  { key: 'labels' },
+  { key: 'secondsSeeding' },
+  { key: 'group' },
+  { key: 'file-count' },
+  { key: 'pieceCount' },
+  { key: 'metadataPercentComplete' }
 ]
 
 export const defaultVisibleColumns = [
@@ -74,7 +72,7 @@ export function useColumns(storageKey = 'torrent-columns') {
       const isDefaultVisible = defaultVisibleColumns.includes(col.key)
       return {
         key: col.key,
-        width: col.minWidth,
+        width: 100,
         visible: col.key === 'name' ? true : isDefaultVisible
       }
     })

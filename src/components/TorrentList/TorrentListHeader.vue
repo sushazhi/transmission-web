@@ -8,7 +8,7 @@
     <div
       class="torrent-table-header-cell-checkbox"
       :class="{ 'torrent-table-header-cell-checkbox-sticky': isStickySelectAll }"
-      v-if="isSupportTouch"
+      v-if="toolbarStore.selectMode"
     >
       <n-checkbox
         :checked="torrentStore.selectedKeys.length === torrentStore.filterTorrents.length"
@@ -51,10 +51,10 @@
 <script setup lang="ts">
 import { allColumns } from '@/composables/useColumns'
 import { useTorrentStore } from '@/store'
-import { isSupportTouch } from '@/utils/evt'
 import { CaretDown, CaretUp } from '@vicons/ionicons5'
 import type { AnyTouchEvent } from 'any-touch'
 import type { CSSProperties } from 'vue'
+import useToolbarStore from '@/components/CanvasList/store/toolbarStore'
 
 withDefaults(
   defineProps<{
@@ -67,21 +67,16 @@ withDefaults(
 )
 // const emit = defineEmits(['contextmenu']) // 不再需要
 const torrentStore = useTorrentStore()
+const toolbarStore = useToolbarStore()
 const visibleColumns = computed(() => torrentStore.visibleColumns)
 const tableMinWidth = computed(() => torrentStore.tableMinWidth)
 const width = computed(() => {
-  return (isSupportTouch ? tableMinWidth.value + 24 : tableMinWidth.value) + 'px'
+  return (toolbarStore.selectMode ? tableMinWidth.value + 24 : tableMinWidth.value) + 'px'
 })
-const minColumnWidth = computed(() => {
-  return allColumns.reduce(
-    (min, col) => {
-      return { ...min, [col.key]: col.minWidth || 80 }
-    },
-    {} as Record<string, number>
-  )
-})
-function getMinWidth(key: any) {
-  return minColumnWidth.value[key] || 80
+const minColumnWidth = 20
+
+function getMinWidth() {
+  return minColumnWidth
 }
 
 function getTitle(key: string) {
@@ -127,7 +122,7 @@ function onResizerTouchMove(e: TouchEvent) {
   resizeLineX.value = e.touches[0].clientX - headerLeft.value
   const touch = e.changedTouches[0]
   const delta = touch.clientX - startX.value
-  const newWidth = Math.max(getMinWidth(resizeColKey.value), startWidth.value + delta)
+  const newWidth = Math.max(getMinWidth(), startWidth.value + delta)
   if (resizeColKey.value) {
     torrentStore.updateColumnWidth(resizeColKey.value, newWidth)
   }
@@ -141,7 +136,7 @@ function onResizerTouchEnd(e: TouchEvent) {
   dom.classList.remove('active')
   const touch = e.changedTouches[0]
   const delta = touch.clientX - startX.value
-  const newWidth = Math.max(getMinWidth(resizeColKey.value), startWidth.value + delta)
+  const newWidth = Math.max(getMinWidth(), startWidth.value + delta)
   if (resizeColKey.value) {
     torrentStore.updateColumnWidth(resizeColKey.value, newWidth)
   }
@@ -172,7 +167,7 @@ function onResizerMouseMove(e: MouseEvent) {
   }
   resizeLineX.value = e.clientX - headerLeft.value
   const delta = e.clientX - startX.value
-  const newWidth = Math.max(getMinWidth(resizeColKey.value), startWidth.value + delta)
+  const newWidth = Math.max(getMinWidth(), startWidth.value + delta)
   if (resizeColKey.value) {
     torrentStore.updateColumnWidth(resizeColKey.value, newWidth)
   }
@@ -183,7 +178,7 @@ function onResizerMouseUp(e: MouseEvent) {
     return
   }
   const delta = e.clientX - startX.value
-  const newWidth = Math.max(getMinWidth(resizeColKey.value), startWidth.value + delta)
+  const newWidth = Math.max(getMinWidth(), startWidth.value + delta)
   if (resizeColKey.value) {
     torrentStore.updateColumnWidth(resizeColKey.value, newWidth)
   }

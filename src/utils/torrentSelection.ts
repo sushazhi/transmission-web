@@ -43,8 +43,8 @@ function isMatchTorrent(
       return t.labels?.includes(filterValue) ?? false
 
     case 'dir':
-      // 目录过滤
-      return t.downloadDir === filterValue
+      // 目录过滤（支持递归匹配子目录）
+      return t.downloadDir === filterValue || t.downloadDir.startsWith(filterValue + '/')
 
     case 'tracker':
       // Tracker 过滤

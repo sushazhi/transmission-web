@@ -27,10 +27,17 @@ const statusMenuOptions = computed(() => {
       label: $t('sidebar.status'),
       key: 'status',
       icon: renderIcon(MagnetIcon),
-      children: torrentStore.statusOptions.map((item) => ({
-        ...item,
-        icon: renderIcon(item.icon || ShuffleOutline, item.color)
-      }))
+      children: torrentStore.statusOptions
+        .filter((item) => {
+          // "all" 选项始终显示
+          if (item.key === 'all') return true
+          // 其他选项根据 statusFilterVisible 配置显示
+          return settingStore.setting.statusFilterVisible[item.key as keyof typeof settingStore.setting.statusFilterVisible] !== false
+        })
+        .map((item) => ({
+          ...item,
+          icon: renderIcon(item.icon || ShuffleOutline, (item as any).color)
+        }))
     }
   ]
 })

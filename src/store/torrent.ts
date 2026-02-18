@@ -12,7 +12,9 @@ import {
   mapToOptions,
   processTorrent,
   sortTorrents,
-  type IMenuItem
+  buildDirTree,
+  type IMenuItem,
+  type IDirMenuItem
 } from './torrentUtils'
 
 const listFields = [
@@ -177,7 +179,7 @@ export const useTorrentStore = defineStore('torrent', () => {
       labelsOptions: mapToOptions(labelsSet, torrents.value.length),
       trackerOptions: mapToOptions(trackerSet, torrents.value.length),
       errorStringOptions: mapToOptions(errorStringSet, torrents.value.length),
-      downloadDirOptions: mapToOptions(downloadDirSet, torrents.value.length),
+      downloadDirOptions: buildDirTree(downloadDirSet, torrents.value.length),
       statusOptions: mapToOptions(statusSet, torrents.value.length)
     }
     return {

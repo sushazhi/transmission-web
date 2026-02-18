@@ -85,7 +85,9 @@ function drawProgressText(
   theme: ThemeCommonVars
 ) {
   const progressText = `${(progress * 100).toFixed(1)}%`
-  ctx.font = `${theme.fontSizeMedium} ${theme.fontFamily}`
+  // 使用较小的字体大小,确保不会与进度条重叠
+  const fontSize = Math.min(parseInt(theme.fontSizeMedium), height)
+  ctx.font = `${fontSize}px ${theme.fontFamily}`
   ctx.fillStyle = theme.textColorBase
   ctx.textAlign = 'right'
   ctx.textBaseline = 'middle'
@@ -197,12 +199,19 @@ function drawStatusTag(
 }
 
 // 高度计算函数
-const calculateHeight: MobileCellHeightCalculator = () => {
-  return MOBILE_PROGRESS_HEIGHT + MOBILE_LINE_MARGIN * 2
+const calculateHeight: MobileCellHeightCalculator = ({ theme }) => {
+  // 根据字体大小动态计算高度,确保文字不会重叠
+  const fontSize = parseInt(theme.fontSizeMedium)
+  const dynamicHeight = Math.max(MOBILE_PROGRESS_HEIGHT, fontSize + 4)
+  return dynamicHeight + MOBILE_LINE_MARGIN * 2
 }
 
 // 渲染函数
 const render: MobileCellRenderer = ({ ctx, row, state, theme }) => {
+  // 根据字体大小动态计算高度
+  const fontSize = parseInt(theme.fontSizeMedium)
+  const dynamicHeight = Math.max(MOBILE_PROGRESS_HEIGHT, fontSize + 4)
+  
   // 布局：进度条50%，百分比文字15%，标签区域35%
   const progressBarWidth = state.width * 0.5
   const progressTextWidth = state.width * 0.15
@@ -224,17 +233,17 @@ const render: MobileCellRenderer = ({ ctx, row, state, theme }) => {
     ctx,
     percentDone,
     progressBarX,
-    state.y + (MOBILE_PROGRESS_HEIGHT - 3) / 2,
+    state.y + (dynamicHeight - 3) / 2,
     progressBarWidth,
     3,
     theme
   )
 
   // 绘制百分比文字
-  drawProgressText(ctx, percentDone, progressTextX, state.y, progressTextWidth, MOBILE_PROGRESS_HEIGHT, theme)
+  drawProgressText(ctx, percentDone, progressTextX, state.y, progressTextWidth, dynamicHeight, theme)
 
   // 绘制状态标签（所有状态都显示标签）
-  const tagY = state.y + (MOBILE_PROGRESS_HEIGHT - 18) / 2
+  const tagY = state.y + (dynamicHeight - 18) / 2
   drawStatusTag(
     ctx,
     row.status,

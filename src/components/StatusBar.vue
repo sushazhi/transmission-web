@@ -95,6 +95,25 @@ const selectedSize = computed(() => {
     .reduce((sum, t) => sum + (t.sizeWhenDone || 0), 0)
 })
 
+const hasActiveFilter = computed(() => {
+  return (
+    torrentStore.statusFilter !== 'all' ||
+    torrentStore.labelsFilter !== 'all' ||
+    torrentStore.trackerFilter !== 'all' ||
+    torrentStore.errorStringFilter !== 'all' ||
+    torrentStore.downloadDirFilter !== 'all' ||
+    torrentStore.search !== ''
+  )
+})
+
+const groupSize = computed(() => {
+  if (!hasActiveFilter.value) {
+    return 0
+  }
+  const filterTorrents = torrentStore.filterTorrents
+  return filterTorrents.reduce((sum, t) => sum + (t.sizeWhenDone || 0), 0)
+})
+
 const limit = computed(() => {
   // 提前判断 session，不存在则返回默认值
   if (!session.value) {
@@ -187,7 +206,7 @@ const allTags = computed(() => [
     }),
     type: 'info' as const
   },
-  { text: $t('statusBar.totalSize', { size: formatSize(totalSize.value) }), type: 'info' as const },
+  { text: $t('statusBar.totalSize', { size: formatSize(hasActiveFilter.value ? groupSize.value : totalSize.value) }), type: hasActiveFilter.value ? 'warning' as const : 'info' as const },
   ...(selectedSize.value > 0
     ? [{ text: $t('statusBar.selectedSize', { size: formatSize(selectedSize.value) }), type: 'info' as const }]
     : []),

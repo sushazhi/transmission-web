@@ -7,7 +7,7 @@
     class="torrent-row"
     :class="{ selected }"
   >
-    <div class="torrent-row-cell torrent-row-cell-checkbox" :key="row.id" v-if="isSmallLg">
+    <div class="torrent-row-cell torrent-row-cell-checkbox" :key="row.id" v-if="toolbarStore.selectMode">
       <n-checkbox :checked="!!torrentStore.mapSelectedKeys[row.id]" @update:checked="onCheckboxChange" />
     </div>
     <template v-for="col in visibleColumns" :key="col.key">
@@ -24,7 +24,6 @@
 </template>
 <script setup lang="ts">
 import type { Torrent } from '@/api/rpc'
-import { useIsSmallLg } from '@/composables/useIsSmallScreen'
 import { useTorrentStore } from '@/store'
 import { type Component } from 'vue'
 import { DynamicScrollerItem } from 'vue-virtual-scroller'
@@ -44,6 +43,7 @@ import SeedsCell from './cells/SeedsCell.vue'
 import StatusCell from './cells/StatusCell.vue'
 import TimeCell from './cells/TimeCell.vue'
 import UpDownRatioCell from './cells/UpDownRatioCell.vue'
+import useToolbarStore from '@/components/CanvasList/store/toolbarStore'
 
 const props = defineProps<{
   row: Torrent
@@ -54,8 +54,8 @@ const props = defineProps<{
 }>()
 
 const torrentStore = useTorrentStore()
+const toolbarStore = useToolbarStore()
 const visibleColumns = computed(() => torrentStore.visibleColumns)
-const isSmallLg = useIsSmallLg()
 
 function onCheckboxChange(checked: boolean) {
   if (checked) {

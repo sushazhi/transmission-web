@@ -3,7 +3,7 @@ import { isSupportTouch } from '@/utils/evt'
 import { defineStore } from 'pinia'
 
 const useToolbarStore = defineStore('ListToolbar', () => {
-  const selectMode = ref<boolean>(!isSupportTouch)
+  const selectMode = ref<boolean>(false)
   const isMobile = useIsSmallScreen()
   const listType = ref<string>(isMobile ? 'card' : 'table')
 

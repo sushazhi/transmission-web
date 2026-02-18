@@ -3,7 +3,15 @@
   <div v-else :class="$style['dashboard-grid']" :style="{ gridTemplateColumns: girdLayout }">
     <!-- Header -->
     <n-layout-header :class="$style.header" bordered>
-      <n-button quaternary circle @click="onSidebarToggle">
+      <n-tooltip v-if="!isMobile" trigger="hover">
+        <template #trigger>
+          <n-button quaternary circle @click="onSidebarToggle">
+            <n-icon size="20" :component="LayoutSidebarLeftOpen" />
+          </n-button>
+        </template>
+        {{ siderBarVisible ? $t('sidebar.hideSidebar') : $t('sidebar.showSidebar') }}
+      </n-tooltip>
+      <n-button v-else quaternary circle @click="onSidebarToggle">
         <n-icon size="20" :component="LayoutSidebarLeftOpen" />
       </n-button>
       <AppHeader @layoutBottom="onLayoutBottom" />
@@ -173,11 +181,11 @@ function onLayoutBottom() {
 onMounted(async () => {
   loading.value = true
 
-  // 设置事件监听器，确保在设备旋转或安全区域变化时更新高度
+  // 设置事件监听器,确保在设备旋转或安全区域变化时更新高度
   window.addEventListener('resize', handleResize)
   window.addEventListener('orientationchange', handleResize)
 
-  // 并行请求所有数据，提升首次加载速度
+  // 并行请求所有数据,提升首次加载速度
   try {
     await Promise.all([
       sessionStore.fetchSession(),
@@ -188,9 +196,9 @@ onMounted(async () => {
     console.error('Failed to fetch initial data:', error)
   }
 
-  // 启用种子列表轮询（每5秒），用于实时更新校验进度
+  // 启用种子列表轮询(每5秒),用于实时更新校验进度
   torrentStore.startPolling()
-  // 统计信息轮询暂时禁用，变化不频繁，可以手动刷新
+  // 统计信息轮询暂时禁用,变化不频繁,可以手动刷新
   // statsStore.startPolling()
 
   loading.value = false

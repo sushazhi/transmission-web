@@ -5,12 +5,15 @@ import { ShuffleOutline } from '@vicons/ionicons5'
 import i18n from '@/i18n'
 import { isFunction } from 'lodash-es'
 import { useSettingStore } from './setting'
+import { formatSize } from '@/utils'
+import { h } from 'vue'
 
 export interface IMenuItem {
   icon?: Component
   count: number
   color?: string
   label?: string
+  size?: number
 }
 
 // 将所有的选项放到 map
@@ -29,11 +32,18 @@ export const detailFilterOptions = function (
   if (Array.isArray(t.labels) && t.labels.length > 0) {
     t.labels.forEach((l: string) => {
       const prev = labelsSet.get(l)
-      labelsSet.set(l, { count: (prev?.count || 0) + 1 })
+      labelsSet.set(l, { 
+        count: (prev?.count || 0) + 1,
+        size: (prev?.size || 0) + (t.sizeWhenDone || 0)
+      })
     })
   } else {
     const prev = labelsSet.get('noLabels')
-    labelsSet.set('noLabels', { count: (prev?.count || 0) + 1, label: $t('common.noLabels') })
+    labelsSet.set('noLabels', { 
+      count: (prev?.count || 0) + 1,
+      label: $t('common.noLabels'),
+      size: (prev?.size || 0) + (t.sizeWhenDone || 0)
+    })
   }
 
   // tracker 统计
@@ -50,37 +60,55 @@ export const detailFilterOptions = function (
         host = host.substring(prefixMatch.groups.prefix.length + 1)
       }
       const prev = trackerSet.get(host)
-      trackerSet.set(host, { count: (prev?.count || 0) + 1 })
+      trackerSet.set(host, { 
+        count: (prev?.count || 0) + 1,
+        size: (prev?.size || 0) + (t.sizeWhenDone || 0)
+      })
     })
   } else {
     const prev = trackerSet.get('noTracker')
-    trackerSet.set('noTracker', { count: (prev?.count || 0) + 1, label: $t('common.noTracker') })
+    trackerSet.set('noTracker', { 
+      count: (prev?.count || 0) + 1,
+      label: $t('common.noTracker'),
+      size: (prev?.size || 0) + (t.sizeWhenDone || 0)
+    })
   }
 
   // error 统计
   if (t.cachedError) {
     const prev = errorStringSet.get(t.cachedError)
-    errorStringSet.set(t.cachedError, { count: (prev?.count || 0) + 1, color: 'var(--error-color)' })
+    errorStringSet.set(t.cachedError, { 
+      count: (prev?.count || 0) + 1,
+      color: 'var(--error-color)',
+      size: (prev?.size || 0) + (t.sizeWhenDone || 0)
+    })
   }
 
   // downloadDir 统计
   if (t.downloadDir) {
-    const prev = downloadDirSet.get(t.downloadDir)
-    downloadDirSet.set(t.downloadDir, { count: (prev?.count || 0) + 1 })
+    const normalizedDir = t.downloadDir.replace(/\/+$/, '')
+    const prev = downloadDirSet.get(normalizedDir)
+    downloadDirSet.set(normalizedDir, { 
+      count: (prev?.count || 0) + 1,
+      size: (prev?.size || 0) + (t.sizeWhenDone || 0)
+    })
   }
 
   // status 统计
   statusFilters.forEach((filter) => {
     const prev = statusSet.get(filter.key)
     let count = prev?.count || 0
+    let size = prev?.size || 0
     if (filter.filter(t)) {
       count++
+      size += (t.sizeWhenDone || 0)
     }
     statusSet.set(filter.key, {
       icon: filter.icon,
       color: filter.color,
       label: filter.label($t),
-      count: count
+      count: count,
+      size: size
     })
   })
 }
@@ -88,23 +116,102 @@ export const detailFilterOptions = function (
 // 将 map 转换成数组
 export const mapToOptions = (map: Map<string, IMenuItem>, total: number) => {
   const $t = i18n.global.t
+  const settingStore = useSettingStore()
+  const showGroupSize = settingStore.setting.showGroupSize
+
   return [
     { key: 'all', label: `${$t('common.all', { total })}`, icon: ShuffleOutline },
     ...Array.from(map.entries()).map(([item, value]) => {
       const label = isFunction(value.label) ? value.label($t) : value.label
+      const sizeText = showGroupSize && value.size ? formatSize(value.size) : ''
       return {
         key: item,
-        label: `${label || item}（${value.count}）`,
+        label: () => {
+          if (sizeText) {
+            return h('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' } }, [
+              h('span', { style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0 } }, `${label || item}（${value.count}）`),
+              h('span', { style: { color: 'var(--text-color-3)', fontSize: '12px', whiteSpace: 'nowrap', marginLeft: '8px' } }, sizeText)
+            ])
+          }
+          return `${label || item}（${value.count}）`
+        },
         color: value?.color,
         icon: value?.icon
       } as {
         key: string
-        label: string
+        label: string | (() => any)
         color?: string
         icon?: Component
       }
     })
   ]
+}
+
+export interface IDirMenuItem {
+  key: string
+  label: string
+  count: number
+  children?: IDirMenuItem[]
+}
+
+export const buildDirTree = (dirMap: Map<string, IMenuItem>, total: number) => {
+  const $t = i18n.global.t
+
+  const allPaths = new Set<string>()
+  dirMap.forEach((_, path) => {
+    const parts = path.split('/').filter(Boolean)
+    parts.forEach((_, index) => {
+      allPaths.add('/' + parts.slice(0, index + 1).join('/'))
+    })
+  })
+
+  const nodes = new Map<string, IDirMenuItem>()
+  allPaths.forEach((path) => {
+    const parts = path.split('/').filter(Boolean)
+    const label = parts[parts.length - 1]
+    const isActualPath = dirMap.has(path)
+    nodes.set(path, {
+      key: path,
+      label: label,
+      count: isActualPath ? dirMap.get(path)!.count : 0,
+      children: []
+    })
+  })
+
+  const tree: IDirMenuItem[] = []
+  nodes.forEach((node, path) => {
+    const parts = path.split('/').filter(Boolean)
+    if (parts.length === 1) {
+      tree.push(node)
+    } else {
+      const parentPath = '/' + parts.slice(0, -1).join('/')
+      const parent = nodes.get(parentPath)
+      if (parent) {
+        parent.children!.push(node)
+      }
+    }
+  })
+
+  const calculateCount = (node: IDirMenuItem): number => {
+    let sum = node.count
+    if (node.children && node.children.length > 0) {
+      node.children.forEach((child) => {
+        sum += calculateCount(child)
+      })
+      node.children.sort((a, b) => a.label.localeCompare(b.label))
+    }
+    node.count = sum
+    if (!node.children || node.children.length === 0) {
+      delete node.children
+    }
+    return sum
+  }
+
+  tree.forEach((node) => calculateCount(node))
+  tree.sort((a, b) => a.label.localeCompare(b.label))
+
+  const allOption: IDirMenuItem = { key: 'all', label: `${$t('common.all', { total })}`, count: total }
+  return [allOption, ...tree]
 }
 
 // 是否可以过滤这个种子
@@ -171,12 +278,13 @@ export const isFilterTorrents = function (
     shouldInclude = false
   }
 
-  // 下载目录过滤
+  // 下载目录过滤（支持递归匹配子目录）
   if (
     shouldInclude &&
     downloadDirFilter.value &&
     downloadDirFilter.value !== 'all' &&
-    t.downloadDir !== downloadDirFilter.value
+    t.downloadDir !== downloadDirFilter.value &&
+    !t.downloadDir.startsWith(downloadDirFilter.value + '/')
   ) {
     shouldInclude = false
   }

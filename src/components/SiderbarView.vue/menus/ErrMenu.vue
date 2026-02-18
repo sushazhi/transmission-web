@@ -28,7 +28,7 @@ const errorMenuOptions = computed(() => {
       icon: renderIcon(DismissSquareIcon, 'var(--error-color)'),
       children: torrentStore.errorStringOptions.map((item) => ({
         ...item,
-        icon: renderIcon(item.icon || DismissSquareIcon, item.color)
+        icon: renderIcon(item.icon || DismissSquareIcon, (item as any).color)
       }))
     }
   ]
