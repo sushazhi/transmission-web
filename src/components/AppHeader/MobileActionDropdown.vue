@@ -19,7 +19,8 @@ import {
   PauseCircle,
   Pricetags,
   StarSharp,
-  Magnet
+  Magnet,
+  CreateOutline
 } from '@vicons/ionicons5'
 import { useThemeVars } from 'naive-ui'
 import { priorityOptions } from './priority'
@@ -42,6 +43,11 @@ const mobileActionOptions = computed(() => [
     label: $t('common.addTorrent'),
     key: 'addTorrent',
     icon: renderIcon(AddCircle, theme.value.primaryColor)
+  },
+  {
+    label: $t('common.createTorrent'),
+    key: 'createTorrent',
+    icon: renderIcon(CreateOutline, theme.value.successColor)
   },
   {
     label: $t('common.startTasks'),

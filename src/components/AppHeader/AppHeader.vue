@@ -11,6 +11,12 @@
           @click="onAddTorrent"
           :color="theme.primaryColor"
         />
+        <IconButton
+          :icon="CreateOutline"
+          :tooltip="$t('common.createTorrent')"
+          @click="onCreateTorrent"
+          :color="theme.successColor"
+        />
       </div>
       <!-- 组2：开始、暂停、删除 -->
       <div class="group-item">
@@ -123,6 +129,7 @@
     </div>
     <DeleteTorrentDialog v-model:show="showDeleteDialog" />
     <AddDialog v-model:show="showAddMagnetDialog" :type="addDialogType" />
+    <CreateTorrentDialog v-model:show="showCreateTorrentDialog" />
     <ChangeDirDialog v-model:show="showChangeDirDialog" />
     <ChangeLables v-model:show="showChangeLabelDialog" />
     <SettingsDialog v-model:show="showSettingsDialog" />
@@ -142,6 +149,7 @@ import {
   FolderOpenSharp,
   StarSharp,
   Pricetags,
+  CreateOutline,
   SettingsSharp
 } from '@vicons/ionicons5'
 import { useThemeVars } from 'naive-ui'
@@ -150,6 +158,7 @@ import { useMessage } from 'naive-ui'
 import { sleep } from '@/utils'
 import { priorityOptions } from './priority'
 import SettingsDialog from '../dialog/settings/SettingsDialog.vue'
+import CreateTorrentDialog from '../dialog/CreateTorrentDialog.vue'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import { useIsSmallScreen } from '@/composables/useIsSmallScreen'
 import { useI18n } from 'vue-i18n'
@@ -161,6 +170,7 @@ const { t: $t } = useI18n()
 const addDialogType = ref<'file' | 'magnet'>('file')
 const showDeleteDialog = ref(false)
 const showAddMagnetDialog = ref(false)
+const showCreateTorrentDialog = ref(false)
 const showChangeDirDialog = ref(false)
 const showChangeLabelDialog = ref(false)
 const showSettingsDialog = ref(false)
@@ -174,6 +184,10 @@ const onAddMagnet = () => {
 const onAddTorrent = () => {
   addDialogType.value = 'file'
   showAddMagnetDialog.value = true
+}
+
+const onCreateTorrent = () => {
+  showCreateTorrentDialog.value = true
 }
 
 const onStart = async () => {
@@ -267,6 +281,9 @@ const onMobileActionSelect = async (key: string) => {
       break
     case 'addTorrent':
       onAddTorrent()
+      break
+    case 'createTorrent':
+      onCreateTorrent()
       break
     case 'start':
       await onStart()

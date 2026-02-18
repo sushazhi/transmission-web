@@ -153,5 +153,6 @@ const cellComponentMap: Record<string, Component> = {
   box-sizing: border-box;
   flex-shrink: 0;
   flex-grow: 0;
+  overflow: hidden;
 }
 </style>
