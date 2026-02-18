@@ -191,6 +191,7 @@
     "freeSpace": "Free Space: {size}",
     "freeSpaceShort": "Free:",
     "toggleTheme": "Toggle Theme",
+    "toggleFontSize": "Toggle Font Size (Ctrl+=)",
     "about": "About"
   },
   "message": {
@@ -279,6 +280,7 @@
   },
   "otherSettings": {
     "title": "Other Settings",
+    "fontSize": "Font Size",
     "singleLine": "Single Line Display",
     "enableDoubleClickSelect": "Double-click sidebar to select all torrents of that type",
     "enableScript": "Enable Torrent Completion Script",

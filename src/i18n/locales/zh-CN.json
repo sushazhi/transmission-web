@@ -191,6 +191,7 @@
     "freeSpace": "剩余空间: {size}",
     "freeSpaceShort": "剩余:",
     "toggleTheme": "切换主题",
+    "toggleFontSize": "切换字体大小 (Ctrl+=)",
     "about": "关于"
   },
   "message": {
@@ -279,6 +280,7 @@
   },
   "otherSettings": {
     "title": "其他设置",
+    "fontSize": "字体大小",
     "singleLine": "单行显示",
     "enableDoubleClickSelect": "双击侧边栏选中该类型所有种子",
     "enableScript": "启用种子完成脚本",

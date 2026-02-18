@@ -8,7 +8,19 @@
         <n-tag v-for="(item, i) in allTags" :key="i" :type="item.type" size="small">{{ item.text }}</n-tag>
       </template>
     </div>
-    <div class="flex items-center gap-1 h-full" :style="{ width: isMobile ? 'auto' : '64px' }">
+    <div class="flex items-center gap-1 h-full" :style="{ width: isMobile ? 'auto' : '96px' }">
+      <n-button
+        quaternary
+        circle
+        size="small"
+        @click="onToggleFontSize"
+        :title="$t('statusBar.toggleFontSize')"
+        class="flex items-center justify-center"
+      >
+        <template #icon>
+          <n-icon :component="TextIcon" />
+        </template>
+      </n-button>
       <n-button
         quaternary
         circle
@@ -40,7 +52,7 @@
 <script setup lang="ts">
 import { useSessionStore, useSettingStore, useTorrentStore } from '@/store'
 import { formatSize, formatSpeed } from '@/utils'
-import { InformationCircle as InfoIcon, Moon as MoonIcon, Sunny as SunIcon } from '@vicons/ionicons5'
+import { InformationCircle as InfoIcon, Moon as MoonIcon, Sunny as SunIcon, Text as TextIcon } from '@vicons/ionicons5'
 import { useI18n } from 'vue-i18n'
 import { useIsSmallScreen } from '@/composables/useIsSmallScreen'
 
@@ -123,11 +135,34 @@ function onToggleTheme() {
   settingStore.setTheme(isDark.value ? 'light' : 'dark')
 }
 
+// 字体大小切换
+function onToggleFontSize() {
+  const currentSize = settingStore.setting.fontSize
+  const sizes = [12, 14, 16, 18, 20]
+  const currentIndex = sizes.indexOf(currentSize)
+  const nextIndex = (currentIndex + 1) % sizes.length
+  settingStore.setFontSize(sizes[nextIndex])
+}
+
 // 关于弹窗（naive-ui n-dialog）
 const showAbout = ref(false)
 function onShowAbout() {
   showAbout.value = true
 }
+
+// 监听 Ctrl+= 快捷键
+onMounted(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
+      e.preventDefault()
+      onToggleFontSize()
+    }
+  }
+  window.addEventListener('keydown', handleKeyDown)
+  onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeyDown)
+  })
+})
 
 // 格式化速度限制，负数表示无限制
 const formatLimit = (limit: number) => {

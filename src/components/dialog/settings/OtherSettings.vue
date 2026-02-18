@@ -3,6 +3,17 @@
     <div class="text-lg font-medium mb-2">{{ $t('otherSettings.title') }}</div>
 
     <n-form :label-placement="labelType" :label-width="labelType === 'top' ? undefined : 220" :model="form">
+      <n-form-item :label="$t('otherSettings.fontSize')">
+        <n-slider
+          v-model:value="fontSize"
+          :min="12"
+          :max="20"
+          :step="1"
+          :tooltip="true"
+          style="width: 200px"
+        />
+        <n-text style="margin-left: 12px; min-width: 50px">{{ fontSize }}px</n-text>
+      </n-form-item>
       <n-form-item :label="$t('otherSettings.singleLine')">
         <n-switch v-model:value="form['single-line']" />
       </n-form-item>
@@ -51,6 +62,12 @@ const labelType = computed(() => (isMobile ? 'top' : 'left'))
 const { t: $t } = useI18n()
 const settingStore = useSettingStore()
 const form = defineModel<any>('form', { required: true })
+
+// 字体大小
+const fontSize = computed({
+  get: () => settingStore.setting.fontSize,
+  set: (val) => settingStore.setFontSize(val)
+})
 
 // 管理忽略的 Tracker 前缀
 const ignoredTrackerPrefixes = ref<string[]>([])

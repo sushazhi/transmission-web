@@ -53,7 +53,9 @@ export const useSettingStore = defineStore('setting', () => {
       // 忽略域名中的部分前缀
       ignoredTrackerPrefixes: ['t', 'tr', 'tk', 'tracker', 'bt', 'open', 'opentracker', 'pt'],
       // 双击侧边栏选中该类型所有种子
-      enableDoubleClickSelect: true
+      enableDoubleClickSelect: true,
+      // 字体大小
+      fontSize: 14
     },
     localStorage,
     { mergeDefaults: true, deep: true }
@@ -179,6 +181,17 @@ export const useSettingStore = defineStore('setting', () => {
     }
   })
 
+  // 设置字体大小
+  function setFontSize(val: number) {
+    setting.value.fontSize = val
+    document.documentElement.style.setProperty('--font-size', `${val}px`)
+  }
+
+  // 初始化字体大小
+  if (setting.value.fontSize) {
+    document.documentElement.style.setProperty('--font-size', `${setting.value.fontSize}px`)
+  }
+
   return {
     setting,
     setTheme,
@@ -199,6 +212,7 @@ export const useSettingStore = defineStore('setting', () => {
     footerHeight,
     changeIgnoredTrackerPrefixes,
     ignoredTrackerPrefixesReg,
-    menuExpandedKeys
+    menuExpandedKeys,
+    setFontSize
   }
 })
