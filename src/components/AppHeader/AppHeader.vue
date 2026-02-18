@@ -91,6 +91,12 @@
             <n-icon :component="StarSharp" size="24" :color="theme.warningColor" />
           </n-button>
         </n-dropdown>
+        <IconButton
+          :tooltip="(altSpeedEnabled ? $t('bandwidthSettings.disableBackupBandwidth') : $t('bandwidthSettings.enableBackupBandwidth')) + ' ' + $t('bandwidthSettings.backupBandwidthShortcut')"
+          @click="onToggleAltSpeed"
+          :icon="altSpeedEnabled ? Rocket : RocketOutline"
+          :color="altSpeedEnabled ? theme.warningColor : theme.primaryColor"
+        />
       </div>
     </div>
     <!-- 种子操作下拉菜单：md及以下显示 -->
@@ -138,7 +144,7 @@
 <script setup lang="ts">
 import DismissSquareIcon from '@/assets/icons/dismissSquare.svg?component'
 import LayoutBottom from '@/assets/icons/layoutBottom.svg?component'
-import { useTorrentStore } from '@/store'
+import { useTorrentStore, useSessionStore } from '@/store'
 import {
   AddCircle,
   CaretForwardCircle,
@@ -150,7 +156,9 @@ import {
   StarSharp,
   Pricetags,
   CreateOutline,
-  SettingsSharp
+  SettingsSharp,
+  Rocket,
+  RocketOutline
 } from '@vicons/ionicons5'
 import { useThemeVars } from 'naive-ui'
 import { rpc } from '@/api/rpc'
@@ -164,6 +172,7 @@ import { useIsSmallScreen } from '@/composables/useIsSmallScreen'
 import { useI18n } from 'vue-i18n'
 const emit = defineEmits(['layoutBottom'])
 const torrentStore = useTorrentStore()
+const sessionStore = useSessionStore()
 const theme = useThemeVars()
 const message = useMessage()
 const { t: $t } = useI18n()
@@ -176,6 +185,25 @@ const showChangeLabelDialog = ref(false)
 const showSettingsDialog = ref(false)
 const isMobile = useIsSmallScreen()
 const router = useRouter()
+
+// 备用带宽模式状态
+const altSpeedEnabled = computed(() => sessionStore.session?.['alt-speed-enabled'] ?? false)
+
+// 切换备用带宽模式
+const onToggleAltSpeed = async () => {
+  try {
+    const newState = !altSpeedEnabled.value
+    await rpc.sessionSet({
+      'alt-speed-enabled': newState
+    })
+    await sessionStore.fetchSession()
+    message.success(newState ? $t('bandwidthSettings.backupEnabled') : $t('bandwidthSettings.backupDisabled'))
+  } catch (error) {
+    console.error(error)
+    message.error($t('bandwidthSettings.backupToggleFailed'))
+  }
+}
+
 const onAddMagnet = () => {
   addDialogType.value = 'magnet'
   showAddMagnetDialog.value = true
@@ -274,6 +302,21 @@ const onLayoutBottom = () => {
   emit('layoutBottom')
 }
 
+// 监听快捷键
+onMounted(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    // Ctrl+Shift+B 切换备用带宽模式
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'b' || e.key === 'B')) {
+      e.preventDefault()
+      onToggleAltSpeed()
+    }
+  }
+  window.addEventListener('keydown', handleKeyDown)
+  onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeyDown)
+  })
+})
+
 const onMobileActionSelect = async (key: string) => {
   switch (key) {
     case 'addMagnet':
@@ -314,6 +357,9 @@ const onMobileActionSelect = async (key: string) => {
       break
     case 'priority-1':
       await onSelectPriority(-1)
+      break
+    case 'toggleAltSpeed':
+      await onToggleAltSpeed()
       break
   }
 }

@@ -7,7 +7,7 @@
 </template>
 <script setup lang="ts">
 import DismissSquareIcon from '@/assets/icons/dismissSquare.svg?component'
-import { useTorrentStore } from '@/store'
+import { useTorrentStore, useSessionStore } from '@/store'
 import { renderIcon } from '@/utils'
 import {
   AddCircle,
@@ -20,7 +20,9 @@ import {
   Pricetags,
   StarSharp,
   Magnet,
-  CreateOutline
+  CreateOutline,
+  Rocket,
+  RocketOutline
 } from '@vicons/ionicons5'
 import { useThemeVars } from 'naive-ui'
 import { priorityOptions } from './priority'
@@ -29,9 +31,11 @@ import { useI18n } from 'vue-i18n'
 const theme = useThemeVars()
 const emit = defineEmits(['action'])
 const torrentStore = useTorrentStore()
+const sessionStore = useSessionStore()
 const { t: $t } = useI18n()
 
 const isOk = computed(() => torrentStore.selectedKeys.length > 0)
+const altSpeedEnabled = computed(() => sessionStore.session?.['alt-speed-enabled'] ?? false)
 
 const mobileActionOptions = computed(() => [
   {
@@ -109,6 +113,15 @@ const mobileActionOptions = computed(() => [
       ...item,
       key: `priority${item.key}`
     }))
+  },
+  {
+    type: 'divider',
+    key: 'd3'
+  },
+  {
+    label: altSpeedEnabled.value ? $t('bandwidthSettings.disableBackupBandwidth') : $t('bandwidthSettings.enableBackupBandwidth'),
+    key: 'toggleAltSpeed',
+    icon: renderIcon(altSpeedEnabled.value ? Rocket : RocketOutline, altSpeedEnabled.value ? theme.value.warningColor : theme.value.primaryColor)
   }
 ])
 
