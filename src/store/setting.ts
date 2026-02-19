@@ -77,7 +77,19 @@ export const useSettingStore = defineStore('setting', () => {
         magnet: true
       },
       // 显示分组体积
-      showGroupSize: false
+      showGroupSize: false,
+      // 状态栏显示配置
+      statusBarVisible: {
+        version: true,
+        server: true,
+        uploadSpeed: true,
+        downloadSpeed: true,
+        totalSize: true,
+        selectedSize: true,
+        freeSpace: true
+      },
+      // 显示全局速度还是过滤后速度
+      showGlobalSpeeds: true
     },
     localStorage,
     { mergeDefaults: true, deep: true }

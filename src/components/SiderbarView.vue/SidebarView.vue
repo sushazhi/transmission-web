@@ -107,11 +107,6 @@ const contextMenuOptions = computed(() => [
     label: $t('sidebar.showGroupSize'),
     key: 'showGroupSize',
     icon: () => renderCheckIcon(settingStore.setting.showGroupSize)
-  },
-  {
-    label: $t('rowMenu.showCheckbox'),
-    key: 'showCheckbox',
-    icon: () => renderCheckIcon(toolbarStore.selectMode)
   }
 ])
 
@@ -134,15 +129,11 @@ function onMenuSelect(key: string) {
   } else if (key === 'showGroupSize') {
     // 处理显示分组体积开关
     settingStore.setting.showGroupSize = !settingStore.setting.showGroupSize
-  } else if (key === 'showCheckbox') {
-    // 处理显示选择框开关
-    toolbarStore.setSelectMode(!toolbarStore.selectMode)
   } else {
-    // 处理侧边栏菜单
-    settingStore.setting.sidebarMenuVisible[key as keyof typeof settingStore.setting.sidebarMenuVisible] = 
-      !settingStore.setting.sidebarMenuVisible[key as keyof typeof settingStore.setting.sidebarMenuVisible]
+      settingStore.setting.sidebarMenuVisible[key as keyof typeof settingStore.setting.sidebarMenuVisible] = 
+        !settingStore.setting.sidebarMenuVisible[key as keyof typeof settingStore.setting.sidebarMenuVisible]
+    }
   }
-}
 </script>
 
 <style lang="less">
@@ -156,7 +147,7 @@ function onMenuSelect(key: string) {
       height: 32px;
       .n-menu-item-content-header {
         height: 32px;
-        font-size: 0.8rem;
+        font-size: 0.8em;
         margin-top: 4px;
       }
     }

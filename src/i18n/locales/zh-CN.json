@@ -197,7 +197,15 @@
     "freeSpaceShort": "剩余:",
     "toggleTheme": "切换主题",
     "toggleFontSize": "切换字体大小 (Ctrl+=)",
-    "about": "关于"
+    "about": "关于",
+    "showVersion": "显示版本",
+    "showServer": "显示服务器",
+    "showUploadSpeed": "显示上传速度",
+    "showDownloadSpeed": "显示下载速度",
+    "showTotalSize": "显示总大小",
+    "showSelectedSize": "显示选中大小",
+    "showFreeSpace": "显示剩余空间",
+    "showGlobalSpeeds": "显示全局速度"
   },
   "message": {
     "taskStarted": "已开始任务",
@@ -371,7 +379,8 @@
     "moveBottom": "队列置底",
     "changeTracker": "修改tracker",
     "other": "修改限速等限制属性",
-    "showCheckbox": "开启选择模式"
+    "showCheckbox": "开启选择模式",
+      "hideCheckbox": "关闭选择模式"
   },
   "columns": {
     "name": "名称",

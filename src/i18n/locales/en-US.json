@@ -197,7 +197,15 @@
     "freeSpaceShort": "Free:",
     "toggleTheme": "Toggle Theme",
     "toggleFontSize": "Toggle Font Size (Ctrl+=)",
-    "about": "About"
+    "about": "About",
+    "showVersion": "Show Version",
+    "showServer": "Show Server",
+    "showUploadSpeed": "Show Upload Speed",
+    "showDownloadSpeed": "Show Download Speed",
+    "showTotalSize": "Show Total Size",
+    "showSelectedSize": "Show Selected Size",
+    "showFreeSpace": "Show Free Space",
+    "showGlobalSpeeds": "Show Global Speeds"
   },
   "message": {
     "taskStarted": "Tasks started",
@@ -371,7 +379,8 @@
     "moveBottom": "Move to Bottom",
     "changeTracker": "Change Tracker",
     "other": "Modify Speed Limits and Restrictions",
-    "showCheckbox": "Enable Selection Mode"
+    "showCheckbox": "Enable Selection Mode",
+      "hideCheckbox": "Disable Selection Mode"
   },
   "columns": {
     "name": "Name",

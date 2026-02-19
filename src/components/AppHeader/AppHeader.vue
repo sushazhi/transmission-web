@@ -97,6 +97,12 @@
           :icon="altSpeedEnabled ? Rocket : RocketOutline"
           :color="altSpeedEnabled ? theme.warningColor : theme.primaryColor"
         />
+          <IconButton
+            :tooltip="toolbarStore.selectMode ? $t('rowMenu.hideCheckbox') : $t('rowMenu.showCheckbox')"
+            @click="onToggleSelectMode"
+            :icon="CheckboxOutline"
+            :color="toolbarStore.selectMode ? theme.primaryColor : theme.textColorBase"
+          />
       </div>
     </div>
     <!-- 种子操作下拉菜单：md及以下显示 -->
@@ -145,6 +151,7 @@
 import DismissSquareIcon from '@/assets/icons/dismissSquare.svg?component'
 import LayoutBottom from '@/assets/icons/layoutBottom.svg?component'
 import { useTorrentStore, useSessionStore } from '@/store'
+  import useToolbarStore from '@/components/CanvasList/store/toolbarStore'
 import {
   AddCircle,
   CaretForwardCircle,
@@ -158,7 +165,8 @@ import {
   CreateOutline,
   SettingsSharp,
   Rocket,
-  RocketOutline
+  RocketOutline,
+    CheckboxOutline
 } from '@vicons/ionicons5'
 import { useThemeVars } from 'naive-ui'
 import { rpc } from '@/api/rpc'
@@ -171,6 +179,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import { useIsSmallScreen } from '@/composables/useIsSmallScreen'
 import { useI18n } from 'vue-i18n'
 const emit = defineEmits(['layoutBottom'])
+  const toolbarStore = useToolbarStore()
 const torrentStore = useTorrentStore()
 const sessionStore = useSessionStore()
 const theme = useThemeVars()
@@ -203,6 +212,10 @@ const onToggleAltSpeed = async () => {
     message.error($t('bandwidthSettings.backupToggleFailed'))
   }
 }
+  // 切换选择模式
+  const onToggleSelectMode = () => {
+    toolbarStore.setSelectMode(!toolbarStore.selectMode)
+  }
 
 const onAddMagnet = () => {
   addDialogType.value = 'magnet'

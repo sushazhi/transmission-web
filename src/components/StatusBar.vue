@@ -1,5 +1,5 @@
 <template>
-  <footer :class="[$style.footer, props.class]">
+  <footer :class="[$style.footer, props.class]" @contextmenu.prevent="onContextMenu">
     <div class="flex items-start gap-1 overflow-hidden flex-1 flex-wrap h-full py-[5px]">
       <template v-if="isMobile">
         <n-tag v-for="(item, i) in mobileTags" :key="i" :type="item.type" size="small">{{ item.text }}</n-tag>
@@ -8,6 +8,18 @@
         <n-tag v-for="(item, i) in allTags" :key="i" :type="item.type" size="small">{{ item.text }}</n-tag>
       </template>
     </div>
+    
+    <!-- 右键菜单 -->
+    <n-dropdown
+      placement="top-start"
+      trigger="manual"
+      :x="contextMenuX"
+      :y="contextMenuY"
+      :options="contextMenuOptions"
+      :show="showContextMenu"
+      @select="onMenuSelect"
+      @clickoutside="showContextMenu = false"
+    />
     <div class="flex items-center gap-1 h-full" :style="{ width: isMobile ? 'auto' : '96px' }">
       <n-button
         quaternary
@@ -53,6 +65,8 @@
 import { useSessionStore, useSettingStore, useTorrentStore } from '@/store'
 import { formatSize, formatSpeed } from '@/utils'
 import { InformationCircle as InfoIcon, Moon as MoonIcon, Sunny as SunIcon, Text as TextIcon } from '@vicons/ionicons5'
+import { Checkmark as CheckIcon } from '@vicons/ionicons5'
+import { h } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsSmallScreen } from '@/composables/useIsSmallScreen'
 
@@ -189,29 +203,65 @@ const formatLimit = (limit: number) => {
 }
 
 // tag 数据
-const allTags = computed(() => [
-  { text: $t('statusBar.version', { version: session.value?.['version'] ?? '--' }), type: 'info' as const },
-  { text: $t('statusBar.server', { server: serverHost.value }), type: 'info' as const },
-  {
-    text: $t('statusBar.upload', {
-      rate: formatSpeed(computedFields.value.upRate),
-      limit: formatLimit(limit.value.upRateLimit)
-    }),
-    type: 'success' as const
-  },
-  {
-    text: $t('statusBar.download', {
-      rate: formatSpeed(computedFields.value.downRate),
-      limit: formatLimit(limit.value.downRateLimit)
-    }),
-    type: 'info' as const
-  },
-  { text: $t('statusBar.totalSize', { size: formatSize(hasActiveFilter.value ? groupSize.value : totalSize.value) }), type: hasActiveFilter.value ? 'warning' as const : 'info' as const },
-  ...(selectedSize.value > 0
-    ? [{ text: $t('statusBar.selectedSize', { size: formatSize(selectedSize.value) }), type: 'info' as const }]
-    : []),
-  { text: $t('statusBar.freeSpace', { size: formatSize(limit.value.freeSpace) }), type: 'info' as const }
-])
+const allTags = computed(() => {
+  const tags = []
+  const visible = settingStore.setting.statusBarVisible
+  const showGlobal = settingStore.setting.showGlobalSpeeds
+  
+  // 版本
+  if (visible.version) {
+    tags.push({ text: $t('statusBar.version', { version: session.value?.['version'] ?? '--' }), type: 'info' as const })
+  }
+  
+  // 服务器
+  if (visible.server) {
+    tags.push({ text: $t('statusBar.server', { server: serverHost.value }), type: 'info' as const })
+  }
+  
+  // 上传速度
+  if (visible.uploadSpeed) {
+    const rate = showGlobal ? computedFields.value.upRate : (torrentStore.filterTorrents.reduce((sum, t) => sum + (t.rateUpload || 0), 0))
+    tags.push({
+      text: $t('statusBar.upload', {
+        rate: formatSpeed(rate),
+        limit: formatLimit(limit.value.upRateLimit)
+      }),
+      type: 'success' as const
+    })
+  }
+  
+  // 下载速度
+  if (visible.downloadSpeed) {
+    const rate = showGlobal ? computedFields.value.downRate : (torrentStore.filterTorrents.reduce((sum, t) => sum + (t.rateDownload || 0), 0))
+    tags.push({
+      text: $t('statusBar.download', {
+        rate: formatSpeed(rate),
+        limit: formatLimit(limit.value.downRateLimit)
+      }),
+      type: 'info' as const
+    })
+  }
+  
+  // 总大小
+  if (visible.totalSize) {
+    tags.push({ 
+      text: $t('statusBar.totalSize', { size: formatSize(hasActiveFilter.value ? groupSize.value : totalSize.value) }), 
+      type: hasActiveFilter.value ? 'warning' as const : 'info' as const 
+    })
+  }
+  
+  // 选中大小
+  if (visible.selectedSize && selectedSize.value > 0) {
+    tags.push({ text: $t('statusBar.selectedSize', { size: formatSize(selectedSize.value) }), type: 'info' as const })
+  }
+  
+  // 剩余空间
+  if (visible.freeSpace) {
+    tags.push({ text: $t('statusBar.freeSpace', { size: formatSize(limit.value.freeSpace) }), type: 'info' as const })
+  }
+  
+  return tags
+})
 
 // 移动版精简显示 - 只显示上下传速度、种子大小、剩余空间
 const mobileTags = computed(() => {
@@ -232,6 +282,82 @@ const mobileTags = computed(() => {
   tags.push({ text: `${$t('statusBar.freeSpaceShort')}${formatSize(limit.value.freeSpace)}`, type: 'info' as const })
   return tags
 })
+
+// 右键菜单
+const showContextMenu = ref(false)
+const contextMenuX = ref(0)
+const contextMenuY = ref(0)
+
+const renderCheckIcon = (checked: boolean) => {
+  return h('div', { 
+    style: { 
+      width: '16px', 
+      height: '16px', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      marginRight: '8px'
+    } 
+  }, checked ? h(CheckIcon, { size: 16 }) : h('div'))
+}
+
+const contextMenuOptions = computed(() => [
+  {
+    label: $t('statusBar.showVersion'),
+    key: 'version',
+    icon: () => renderCheckIcon(settingStore.setting.statusBarVisible.version)
+  },
+  {
+    label: $t('statusBar.showServer'),
+    key: 'server',
+    icon: () => renderCheckIcon(settingStore.setting.statusBarVisible.server)
+  },
+  {
+    type: 'divider',
+    key: 'd1'
+  },
+  {
+    label: $t('statusBar.showUploadSpeed'),
+    key: 'uploadSpeed',
+    icon: () => renderCheckIcon(settingStore.setting.statusBarVisible.uploadSpeed)
+  },
+  {
+    label: $t('statusBar.showDownloadSpeed'),
+    key: 'downloadSpeed',
+    icon: () => renderCheckIcon(settingStore.setting.statusBarVisible.downloadSpeed)
+  },
+  {
+    type: 'divider',
+    key: 'd2'
+  },
+  {
+    label: $t('statusBar.showTotalSize'),
+    key: 'totalSize',
+    icon: () => renderCheckIcon(settingStore.setting.statusBarVisible.totalSize)
+  },
+  {
+    label: $t('statusBar.showSelectedSize'),
+    key: 'selectedSize',
+    icon: () => renderCheckIcon(settingStore.setting.statusBarVisible.selectedSize)
+  },
+  {
+    label: $t('statusBar.showFreeSpace'),
+    key: 'freeSpace',
+    icon: () => renderCheckIcon(settingStore.setting.statusBarVisible.freeSpace)
+  }
+])
+
+function onContextMenu(e: MouseEvent) {
+  e.preventDefault()
+  contextMenuX.value = e.clientX
+  contextMenuY.value = e.clientY
+  showContextMenu.value = true
+}
+
+function onMenuSelect(key: string) {
+  settingStore.setting.statusBarVisible[key as keyof typeof settingStore.setting.statusBarVisible] = 
+    !settingStore.setting.statusBarVisible[key as keyof typeof settingStore.setting.statusBarVisible]
+}
 </script>
 
 <style module lang="less">

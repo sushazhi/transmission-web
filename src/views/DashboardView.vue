@@ -218,13 +218,13 @@ onUnmounted(() => {
 @import '@/styles/mix.less';
 .dashboard-grid {
   display: grid;
-  grid-template-rows: 56px 1fr 32px;
+  grid-template-rows: var(--header-height, 56px) 1fr var(--footer-height, 32px);
   box-sizing: border-box;
   height: 100%;
   .header {
     grid-row: 1 / 2;
     grid-column: 1 / -1;
-    height: 56px;
+    height: var(--header-height, 56px);
     z-index: 10;
     display: flex;
     flex-wrap: nowrap;
@@ -265,9 +265,9 @@ onUnmounted(() => {
 }
 
 .footer {
+    height: var(--footer-height, 32px);
   grid-row: 3 / 4;
   grid-column: 1 / -1;
-  height: 32px;
   z-index: 10;
   display: flex;
   align-items: center;

@@ -6,5 +6,25 @@
     scrollbar-gutter: stable; /* 预留空间 */
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-color) transparent;
+
+    /* Webkit 滚动条样式 */
+    &::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--scrollbar-color);
+      border-radius: 4px;
+      transition: background-color 0.3s;
+
+      &:hover {
+        background-color: var(--n-primary-color);
+      }
+    }
+
+    &::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
   }
 }

@@ -11,6 +11,26 @@ a:hover {
   --top-inset: env(safe-area-inset-top);
   --bottom-inset: env(safe-area-inset-bottom);
   --font-size: 14px;
+  --icon-size-base: 20px;
+  --button-size-base: 36px;
+  --header-height: 56px;
+  --footer-height: 32px;
+}
+
+/* 高分屏适配 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  :root {
+    --icon-size-base: 24px;
+    --button-size-base: 40px;
+  }
+}
+
+/* 高分辨率屏幕适配 */
+@media (min-height: 1080px) {
+  :root {
+    --header-height: 64px;
+    --footer-height: 36px;
+  }
 }
 
 body {
@@ -118,4 +138,22 @@ button:focus {
 
 [data-theme="light"] .n-dropdown-menu {
   background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* 按钮悬停效果 */
+.n-button {
+  transition: all 0.2s ease;
+}
+
+.n-button:hover {
+  transform: translateY(-1px);
+}
+
+.n-button:active {
+  transform: translateY(0);
+}
+
+/* 图标按钮动画 */
+.n-button[quaternary]:hover {
+  background-color: color-mix(in srgb, var(--n-primary-color) 10%, transparent);
 }
