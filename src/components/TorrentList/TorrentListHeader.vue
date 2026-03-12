@@ -49,7 +49,6 @@
   <HeaderMenu v-model:show="showColumnMenu" :x="columnMenuX" :y="columnMenuY" />
 </template>
 <script setup lang="ts">
-import { allColumns } from '@/composables/useColumns'
 import { useTorrentStore } from '@/store'
 import { CaretDown, CaretUp } from '@vicons/ionicons5'
 import type { AnyTouchEvent } from 'any-touch'

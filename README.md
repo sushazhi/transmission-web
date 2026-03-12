@@ -156,15 +156,11 @@ cd transmission-web
 ### Install Dependencies
 
 ```bash
-# Use pnpm (recommended)
+# Use pnpm (strongly recommended)
 pnpm install
-
-# Or use npm
-npm install
-
-# Or use yarn
-yarn install
 ```
+
+> **Note**: This project is optimized for pnpm. Using npm or yarn may result in configuration warnings. The project uses pnpm-specific `overrides` functionality and `.npmrc` configuration.
 
 ### Development Environment
 

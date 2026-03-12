@@ -30,7 +30,7 @@ const statusMenuOptions = computed(() => {
       children: torrentStore.statusOptions
         .filter((item) => {
           // "all" 选项始终显示
-          if (item.key === 'all') return true
+          if (item.key === 'all') {return true}
           // 其他选项根据 statusFilterVisible 配置显示
           return settingStore.setting.statusFilterVisible[item.key as keyof typeof settingStore.setting.statusFilterVisible] !== false
         })

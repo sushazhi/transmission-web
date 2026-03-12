@@ -31,7 +31,7 @@ async function openDB(): Promise<IDBDatabase> {
     request.onsuccess = () => resolve(request.result)
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result
-      if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, { keyPath: 'version' })
+      if (!db.objectStoreNames.contains(STORE_NAME)) {db.createObjectStore(STORE_NAME, { keyPath: 'version' })}
     }
   })
 }
@@ -74,7 +74,7 @@ async function saveToCache(data: ArrayBuffer): Promise<void> {
 
 async function fetchFromCDN(): Promise<ArrayBuffer> {
   const response = await fetch(CDN_URL, { cache: 'force-cache', signal: AbortSignal.timeout(60000) })
-  if (!response.ok) throw new Error(`HTTP ${response.status}`)
+  if (!response.ok) {throw new Error(`HTTP ${response.status}`)}
   const arrayBuffer = await response.arrayBuffer()
   const sizeMB = (arrayBuffer.byteLength / 1024 / 1024).toFixed(2)
   console.log(`[maxmindLoader] CDN 下载成功，大小: ${sizeMB}MB`)
@@ -84,13 +84,13 @@ async function fetchFromCDN(): Promise<ArrayBuffer> {
 
 async function loadDatabaseBuffer(): Promise<ArrayBuffer> {
   const cached = await loadFromCache()
-  if (cached) return cached
+  if (cached) {return cached}
   return fetchFromCDN()
 }
 
 export async function loadDatabase(): Promise<mmdb.Reader<CountryResponse>> {
-  if (databaseReader !== null) return databaseReader
-  if (loadingPromise !== null) return loadingPromise
+  if (databaseReader !== null) {return databaseReader}
+  if (loadingPromise !== null) {return loadingPromise}
 
   const startTime = performance.now()
 

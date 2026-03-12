@@ -100,6 +100,12 @@ const formInit = () => {
   sessionForm.value['download-dir'] = session.value?.['download-dir'] || ''
   //未完成文件是否加 .part 后缀
   sessionForm.value['rename-partial-files'] = !!session.value?.['rename-partial-files']
+  //添加后删除种子文件
+  sessionForm.value['trash-original-torrent-files'] = !!session.value?.['trash-original-torrent-files']
+  //是否启用监控目录
+  sessionForm.value['watch-dir-enabled'] = !!session.value?.['watch-dir-enabled']
+  //监控目录路径
+  sessionForm.value['watch-dir'] = session.value?.['watch-dir'] || ''
   //是否启用未完成目录
   sessionForm.value['incomplete-dir-enabled'] = !!session.value?.['incomplete-dir-enabled']
   //未完成下载的临时目录（可选）
@@ -166,6 +172,12 @@ const formInit = () => {
   // 其他设置
   sessionForm.value['script-torrent-done-filename'] = session.value?.['script-torrent-done-filename'] || ''
   sessionForm.value['script-torrent-done-enabled'] = !!session.value?.['script-torrent-done-enabled']
+  // 种子添加脚本（4.0.0+）
+  sessionForm.value['script-torrent-added-filename'] = session.value?.['script-torrent-added-filename'] || ''
+  sessionForm.value['script-torrent-added-enabled'] = !!session.value?.['script-torrent-added-enabled']
+  // 做种完成脚本（4.0.0+）
+  sessionForm.value['script-torrent-done-seeding-filename'] = session.value?.['script-torrent-done-seeding-filename'] || ''
+  sessionForm.value['script-torrent-done-seeding-enabled'] = !!session.value?.['script-torrent-done-seeding-enabled']
   sessionForm.value['single-line'] = !!settingStore.setting.singleLine
   sessionForm.value['default-trackers'] =
     session.value?.['default-trackers'] || settingStore.setting.defaultTrackers.join('\n')

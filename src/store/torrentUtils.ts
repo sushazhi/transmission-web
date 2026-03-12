@@ -360,8 +360,14 @@ export const getTorrentError = (t: Torrent): string => {
 }
 
 // 获取 tracker 状态
-export const getTrackerAnnounceState = (tracker: TrackerStat) => {
+export const getTrackerAnnounceState = (tracker: TrackerStat, torrentStatus?: number) => {
   const $t = i18n.global.t
+
+  // 如果种子已暂停，显示为已暂停
+  if (torrentStatus === Status.stopped) {
+    return $t('status.stopped')
+  }
+
   if (tracker.announceState === 3) {
     return $t('statusFilter.working') + '(' + $t('status.uploading') + ')'
   }
@@ -383,7 +389,7 @@ export const getTrackerStatus = (torrent: Torrent): string => {
   if (torrent.status === Status.stopped || trackers.length === 0) {
     return ''
   }
-  return getTrackerAnnounceState(trackers[0])
+  return getTrackerAnnounceState(trackers[0], torrent.status)
 }
 
 export const portRe = /:\d+$/

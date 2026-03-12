@@ -72,7 +72,6 @@ import { useTorrentStore } from '@/store'
 import { rpc } from '@/api/rpc'
 import { useI18n } from 'vue-i18n'
 import { sleep } from '@/utils'
-import type { Torrent } from '@/api/rpc'
 
 const show = defineModel<boolean>('show', { required: true })
 const message = useMessage()
@@ -100,7 +99,7 @@ const trackerOptions = computed(() => {
 // 匹配的种子列表
 const matchedTorrents = computed(() => {
   const search = searchTracker.value.trim().toLowerCase()
-  if (!search) return []
+  if (!search) {return []}
 
   return torrentStore.torrents.filter((t) => t.trackerStats.some((ts) => ts.announce?.toLowerCase().includes(search)))
 })
@@ -144,7 +143,7 @@ function getStatusText(status: number): string {
 
 // 执行替换
 async function onConfirm() {
-  if (!canSubmit.value) return
+  if (!canSubmit.value) {return}
 
   loading.value = true
   try {

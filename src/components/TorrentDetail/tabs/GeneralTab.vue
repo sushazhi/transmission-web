@@ -15,6 +15,14 @@
           <span>{{ statusText }}</span>
         </div>
         <div class="info-item">
+          <span>{{ t('torrentDetail.general.priority') }}</span>
+          <span>{{ getPriorityText() }}</span>
+        </div>
+        <div class="info-item">
+          <span>{{ t('torrentDetail.general.queuePosition') }}</span>
+          <span>{{ getQueuePosition() }}</span>
+        </div>
+        <div class="info-item">
           <span>{{ t('torrentDetail.general.downloaded') }}</span>
           <span>{{ formatSize(torrent.downloadedEver) }}</span>
         </div>
@@ -143,6 +151,20 @@
               <span v-if="!torrent.labels?.length">-</span>
             </div>
           </div>
+          <div class="info-item">
+            <span>{{ t('torrentDetail.general.private') }}</span>
+            <span>
+              <n-tag v-if="torrent.isPrivate" size="small" type="warning">{{ t('torrentDetail.general.privateTorrent') }}</n-tag>
+              <span v-else>{{ t('torrentDetail.general.publicTorrent') }}</span>
+            </span>
+          </div>
+          <div class="info-item">
+            <span>{{ t('torrentDetail.general.sequentialDownload') }}</span>
+            <span>
+              <n-tag v-if="torrent.sequentialDownload" size="small" type="info">{{ t('torrentDetail.general.sequential') }}</n-tag>
+              <span v-else>{{ t('torrentDetail.general.random') }}</span>
+            </span>
+          </div>
         </div>
       </div>
     </n-card>
@@ -235,6 +257,20 @@ function getBlocksInfo() {
 function getWasted() {
   const hashfails = props.torrent.pieceSize! > 0 ? props.torrent.corruptEver! / props.torrent.pieceSize! || 0 : 0
   return `${formatSize(props.torrent.corruptEver!)} (${hashfails} ${t('torrentDetail.general.abnormal')})`
+}
+
+// 获取优先级文本
+function getPriorityText() {
+  const priority = props.torrent.bandwidthPriority
+  if (priority === 1) {return t('priority.high')}
+  if (priority === -1) {return t('priority.low')}
+  return t('priority.normal')
+}
+
+// 获取队列位置
+function getQueuePosition() {
+  if (props.torrent.queuePosition === undefined) {return '-'}
+  return `#${props.torrent.queuePosition + 1}`
 }
 </script>
 

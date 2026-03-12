@@ -19,25 +19,25 @@ function isIPv6(ip: string): boolean {
 }
 
 function isPrivateIP(ip: string): boolean {
-  if (!ip) return true
+  if (!ip) {return true}
   if (isIPv6(ip)) {
     const cleanIp = ip.replace(/^\[|\]$/g, '')
     const ipv6PrivatePrefixes = ['::1', 'fe80:', 'fc', 'fd', '::ffff:127.', '::ffff:10.', '::ffff:172.16.', '::ffff:172.17.']
     return ipv6PrivatePrefixes.some((prefix) => cleanIp.toLowerCase().startsWith(prefix))
   }
   const num = ipToNumber(ip)
-  if (num === null) return true
+  if (num === null) {return true}
   for (const range of PRIVATE_IP_RANGES) {
     const startNum = ipToNumber(range.start)!
     const endNum = ipToNumber(range.end)!
-    if (num >= startNum && num <= endNum) return true
+    if (num >= startNum && num <= endNum) {return true}
   }
   return false
 }
 
 function ipToNumber(ip: string): number | null {
   const parts = ip.split('.').map(Number)
-  if (parts.length !== 4 || parts.some(isNaN)) return null
+  if (parts.length !== 4 || parts.some(isNaN)) {return null}
   return (parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]
 }
 
@@ -62,24 +62,24 @@ export function hasCachedCountryCode(ip: string): boolean {
 }
 
 export function getCountryName(countryCode: string): string {
-  if (!countryCode || countryCode.length !== 2) return countryCode || ''
+  if (!countryCode || countryCode.length !== 2) {return countryCode || ''}
   const upperCode = countryCode.toUpperCase()
   const country = countries[upperCode as keyof typeof countries]
   return country?.name || countryCode
 }
 
 export async function lookupCountryInfo(ip: string): Promise<{ code: string; name: string } | null> {
-  if (!ip || isPrivateIP(ip)) return null
+  if (!ip || isPrivateIP(ip)) {return null}
   const cached = countryInfoCache.get(ip)
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) return { code: cached.code, name: cached.name }
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {return { code: cached.code, name: cached.name }}
   const code = await lookupCountryCode(ip)
-  if (!code) return null
+  if (!code) {return null}
   const name = getCountryName(code)
   const countryInfo: CountryInfo = { code, name, timestamp: Date.now() }
   countryInfoCache.set(ip, countryInfo)
   if (countryInfoCache.size > MAX_CACHE_SIZE) {
     const oldestKey = countryInfoCache.keys().next().value
-    if (oldestKey !== undefined) countryInfoCache.delete(oldestKey)
+    if (oldestKey !== undefined) {countryInfoCache.delete(oldestKey)}
   }
   return { code, name }
 }
@@ -87,11 +87,11 @@ export async function lookupCountryInfo(ip: string): Promise<{ code: string; nam
 const pendingQueries = new Map<string, Promise<string>>()
 
 export async function lookupCountryCode(ip: string): Promise<string | null> {
-  if (!ip || isPrivateIP(ip)) return null
+  if (!ip || isPrivateIP(ip)) {return null}
   try {
     const reader = await loadDatabase()
     const response = reader.get(ip) as any
-    if (!response || Object.keys(response).length === 0) return null
+    if (!response || Object.keys(response).length === 0) {return null}
     const countryCode = response.country_code || response.country?.iso_code || response.registered_country?.iso_code || null
     if (countryCode) {
       const code = countryCode === 'TW' ? 'CN' : countryCode
@@ -106,10 +106,10 @@ export async function lookupCountryCode(ip: string): Promise<string | null> {
 }
 
 export function getCountryCodeAsync(ip: string): Promise<string> {
-  if (!ip) return Promise.resolve('')
-  if (isPrivateIP(ip)) return Promise.resolve('')
-  if (countryCodeCache.has(ip)) return Promise.resolve(countryCodeCache.get(ip)!)
-  if (pendingQueries.has(ip)) return pendingQueries.get(ip)!
+  if (!ip) {return Promise.resolve('')}
+  if (isPrivateIP(ip)) {return Promise.resolve('')}
+  if (countryCodeCache.has(ip)) {return Promise.resolve(countryCodeCache.get(ip)!)}
+  if (pendingQueries.has(ip)) {return pendingQueries.get(ip)!}
   const promise: Promise<string> = lookupCountryCode(ip).then((code) => {
     pendingQueries.delete(ip)
     return code || ''
@@ -120,18 +120,18 @@ export function getCountryCodeAsync(ip: string): Promise<string> {
 
 async function batchLookupIps(ips: string[], batchSize = 50): Promise<void> {
   const batches = []
-  for (let i = 0; i < ips.length; i += batchSize) batches.push(ips.slice(i, i + batchSize))
+  for (let i = 0; i < ips.length; i += batchSize) {batches.push(ips.slice(i, i + batchSize))}
   let delay = 0
   for (const batch of batches) {
-    if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay))
+    if (delay > 0) {await new Promise((resolve) => setTimeout(resolve, delay))}
     delay = 50
-    await Promise.allSettled(batch.map((ip) => lookupCountryCode(ip).then((code) => { if (code) countryCodeCache.set(ip, code) })))
+    await Promise.allSettled(batch.map((ip) => lookupCountryCode(ip).then((code) => { if (code) {countryCodeCache.set(ip, code)} })))
   }
 }
 
 export async function preloadCountryCodes(ips: string[]): Promise<void> {
   const uniqueIps = [...new Set(ips)].filter((ip) => !countryCodeCache.has(ip) && !isPrivateIP(ip))
-  if (uniqueIps.length === 0) return
+  if (uniqueIps.length === 0) {return}
   console.log(`[ipLookup] 开始预加载 ${uniqueIps.length} 个 IP`)
   const batchStartTime = performance.now()
   await loadDatabase()

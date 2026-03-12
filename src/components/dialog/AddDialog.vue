@@ -164,7 +164,7 @@ const selectedFileCount = computed(() => selectedFiles.value.size)
 
 // 计算选中的文件大小
 const selectedFileSize = computed(() => {
-  if (!torrentInfo.value) return 0
+  if (!torrentInfo.value) {return 0}
   let size = 0
   selectedFiles.value.forEach((index) => {
     const file = torrentInfo.value?.files[index]

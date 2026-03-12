@@ -13,7 +13,7 @@
         </div>
         <div class="tracker-card-row">
           <span class="tracker-card-label">{{ t('torrentDetail.tracker.status') }}:</span>
-          <span class="tracker-card-value">{{ getTrackerAnnounceState(tracker) }}</span>
+          <span class="tracker-card-value">{{ getTrackerAnnounceState(tracker, props.torrent.status) }}</span>
         </div>
         <div class="tracker-card-row">
           <span class="tracker-card-label">{{ t('torrentDetail.tracker.nextAnnounce') }}:</span>
@@ -53,7 +53,7 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 const isMobile = useIsSmallScreen()
 
-defineProps<{ torrent: Torrent }>()
+const props = defineProps<{ torrent: Torrent }>()
 const showChangeTrackerDialog = ref(false)
 
 function handleChangeTracker() {
@@ -91,7 +91,7 @@ const columns: DataTableColumns<TrackerStat> = [
     title: t('torrentDetail.tracker.status'),
     key: 'status',
     width: 80,
-    render: (row) => getTrackerAnnounceState(row)
+    render: (row) => getTrackerAnnounceState(row, props.torrent.status)
   },
   {
     title: t('torrentDetail.tracker.nextAnnounce'),

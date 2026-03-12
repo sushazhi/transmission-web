@@ -20,18 +20,54 @@
       <n-form-item :label="$t('otherSettings.enableDoubleClickSelect')">
         <n-switch v-model:value="settingStore.setting.enableDoubleClickSelect" />
       </n-form-item>
-      <n-form-item>
-        <template #label>
-          <n-checkbox v-model:checked="form['script-torrent-done-enabled']">{{
-            $t('otherSettings.enableScript')
-          }}</n-checkbox>
-        </template>
-        <n-input
-          v-model:value="form['script-torrent-done-filename']"
-          :placeholder="$t('otherSettings.scriptPlaceholder')"
-          class="w-80"
-        />
-      </n-form-item>
+
+      <!-- 脚本钩子设置 -->
+      <div class="border-t pt-4 border-color-[var(--border-color)]">
+        <div class="text-base font-medium mb-2">{{ $t('otherSettings.scriptHooks') }}</div>
+
+        <!-- 种子添加脚本（4.0.0+） -->
+        <n-form-item v-if="rpcVersion >= 17">
+          <template #label>
+            <n-checkbox v-model:checked="form['script-torrent-added-enabled']">{{
+              $t('otherSettings.enableAddedScript')
+            }}</n-checkbox>
+          </template>
+          <n-input
+            v-model:value="form['script-torrent-added-filename']"
+            :placeholder="$t('otherSettings.scriptPlaceholder')"
+            class="w-80"
+          />
+        </n-form-item>
+
+        <!-- 下载完成脚本 -->
+        <n-form-item>
+          <template #label>
+            <n-checkbox v-model:checked="form['script-torrent-done-enabled']">{{
+              $t('otherSettings.enableDoneScript')
+            }}</n-checkbox>
+          </template>
+          <n-input
+            v-model:value="form['script-torrent-done-filename']"
+            :placeholder="$t('otherSettings.scriptPlaceholder')"
+            class="w-80"
+          />
+        </n-form-item>
+
+        <!-- 做种完成脚本（4.0.0+） -->
+        <n-form-item v-if="rpcVersion >= 17">
+          <template #label>
+            <n-checkbox v-model:checked="form['script-torrent-done-seeding-enabled']">{{
+              $t('otherSettings.enableSeedingDoneScript')
+            }}</n-checkbox>
+          </template>
+          <n-input
+            v-model:value="form['script-torrent-done-seeding-filename']"
+            :placeholder="$t('otherSettings.scriptPlaceholder')"
+            class="w-80"
+          />
+        </n-form-item>
+      </div>
+
       <n-form-item :label="$t('otherSettings.ignoredPrefixes')">
         <div style="width: 100%">
           <n-dynamic-tags v-model:value="ignoredTrackerPrefixes" @update:value="handleIgnoredPrefixesChange" />
@@ -56,12 +92,16 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { useIsSmallScreen } from '@/composables/useIsSmallScreen'
-import { useSettingStore } from '@/store'
+import { useSettingStore, useSessionStore } from '@/store'
 const isMobile = useIsSmallScreen()
 const labelType = computed(() => (isMobile ? 'top' : 'left'))
 const { t: $t } = useI18n()
 const settingStore = useSettingStore()
+const sessionStore = useSessionStore()
 const form = defineModel<any>('form', { required: true })
+
+// RPC 版本
+const rpcVersion = computed(() => sessionStore.rpcVersion)
 
 // 字体大小
 const fontSize = computed({

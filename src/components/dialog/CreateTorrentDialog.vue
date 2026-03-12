@@ -180,7 +180,7 @@ const totalSize = computed(() => {
 
 // 推荐的分片大小
 const recommendedPieceSize = computed(() => {
-  if (totalSize.value === 0) return 0
+  if (totalSize.value === 0) {return 0}
   return recommendPieceSize(totalSize.value)
 })
 
@@ -217,7 +217,7 @@ function triggerFolderSelect() {
 async function onFileInputChange(event: Event) {
   const input = event.target as HTMLInputElement
   const files = input.files
-  if (!files || files.length === 0) return
+  if (!files || files.length === 0) {return}
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
@@ -254,7 +254,7 @@ async function onFileInputChange(event: Event) {
 async function onFolderInputChange(event: Event) {
   const input = event.target as HTMLInputElement
   const files = input.files
-  if (!files || files.length === 0) return
+  if (!files || files.length === 0) {return}
 
   // 清空之前选择的文件
   selectedFiles.value = []

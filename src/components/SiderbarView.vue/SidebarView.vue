@@ -25,14 +25,12 @@ import { useI18n } from 'vue-i18n'
 import { Checkmark as CheckIcon } from '@vicons/ionicons5'
 import { h } from 'vue'
 import { statusFilters } from '@/const/status'
-import useToolbarStore from '@/components/CanvasList/store/toolbarStore'
 
 const props = defineProps<{
   class: string
 }>()
 
 const settingStore = useSettingStore()
-const toolbarStore = useToolbarStore()
 const { t: $t } = useI18n()
 
 const showContextMenu = ref(false)

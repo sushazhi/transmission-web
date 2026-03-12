@@ -66,9 +66,9 @@ const isPreloading = ref(false)
 const lastPreloadPeersHash = ref('')
 
 function triggerPeerPreload() {
-  if (!props.torrent.peers || isPreloading.value) return
+  if (!props.torrent.peers || isPreloading.value) {return}
   const peersHash = JSON.stringify(props.torrent.peers.map((p) => ({ a: p.address, p: p.port })))
-  if (peersHash === lastPreloadPeersHash.value) return
+  if (peersHash === lastPreloadPeersHash.value) {return}
   lastPreloadPeersHash.value = peersHash
   isPreloading.value = true
   const addresses = props.torrent.peers.map((p) => p.address || '').filter((a) => a && !hasCachedCountryCode(a))
@@ -79,20 +79,20 @@ function triggerPeerPreload() {
 }
 
 onMounted(() => {
-  if (torrentStore.detailTab === 'peers' && props.torrent.peers) triggerPeerPreload()
+  if (torrentStore.detailTab === 'peers' && props.torrent.peers) {triggerPeerPreload()}
 })
 
 watch(
   () => torrentStore.detailTab,
   (newTab) => {
-    if (newTab === 'peers') triggerPeerPreload()
+    if (newTab === 'peers') {triggerPeerPreload()}
   },
   { immediate: true }
 )
 watch(
   () => props.torrent.peers?.length,
   (newLength) => {
-    if (newLength && newLength > 0 && torrentStore.detailTab === 'peers') triggerPeerPreload()
+    if (newLength && newLength > 0 && torrentStore.detailTab === 'peers') {triggerPeerPreload()}
   }
 )
 
@@ -192,7 +192,7 @@ const columns: DataTableColumns<
 ]
 
 function handleSort(columnKey: string) {
-  if (sortKey.value === columnKey) sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  if (sortKey.value === columnKey) {sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'}
   else {
     sortKey.value = columnKey
     sortOrder.value = 'desc'

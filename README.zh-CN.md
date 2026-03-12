@@ -156,15 +156,11 @@ cd transmission-web
 ### 安装依赖
 
 ```bash
-# 使用 pnpm (推荐)
+# 使用 pnpm (强烈推荐)
 pnpm install
-
-# 或使用 npm
-npm install
-
-# 或使用 yarn
-yarn install
 ```
+
+> **注意**: 本项目专为 pnpm 优化,使用 npm 或 yarn 可能会出现配置警告。项目使用了 pnpm 特有的 `overrides` 功能和 `.npmrc` 配置。
 
 ### 开发环境运行
 

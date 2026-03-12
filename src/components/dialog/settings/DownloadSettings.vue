@@ -18,6 +18,18 @@
         <n-input v-model:value="form['incomplete-dir']" placeholder="/share/media2/incomplete" class="w-80" />
       </n-form-item>
 
+      <n-form-item :label="$t('downloadSettings.enableWatchDir')" label-placement="left">
+        <n-checkbox v-model:checked="form['watch-dir-enabled']"> </n-checkbox>
+      </n-form-item>
+
+      <n-form-item :label="$t('downloadSettings.watchDir')" v-if="form['watch-dir-enabled']">
+        <n-input v-model:value="form['watch-dir']" :placeholder="$t('downloadSettings.watchDirPlaceholder')" class="w-80" />
+      </n-form-item>
+
+      <n-form-item :label="$t('downloadSettings.trashOriginalTorrentFiles')" label-placement="left">
+        <n-checkbox v-model:checked="form['trash-original-torrent-files']"> </n-checkbox>
+      </n-form-item>
+
       <div class="border-t pt-4 border-color-[var(--border-color)]">
         <div class="text-base font-medium mb-2">{{ $t('downloadSettings.seedingSettings') }}</div>
         <n-form-item>
