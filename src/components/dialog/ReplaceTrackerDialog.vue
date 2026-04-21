@@ -81,8 +81,8 @@ const loading = ref(false)
 const searchTracker = ref('')
 const replaceTracker = ref('')
 
-// 所有 Tracker 选项（用于自动完成）
-const trackerOptions = computed(() => {
+// 所有 Tracker 地址（去重排序）
+const allTrackers = computed(() => {
   const trackers = new Set<string>()
   torrentStore.torrents.forEach((t) => {
     t.trackerStats.forEach((ts) => {
@@ -91,9 +91,16 @@ const trackerOptions = computed(() => {
       }
     })
   })
-  return Array.from(trackers)
-    .sort()
-    .map((t) => ({ label: t, value: t }))
+  return Array.from(trackers).sort()
+})
+
+// 搜索框的自动完成选项（根据输入内容过滤）
+const trackerOptions = computed(() => {
+  const search = searchTracker.value.trim().toLowerCase()
+  const list = search
+    ? allTrackers.value.filter((t) => t.toLowerCase().includes(search))
+    : allTrackers.value
+  return list.map((t) => ({ label: t, value: t }))
 })
 
 // 匹配的种子列表
