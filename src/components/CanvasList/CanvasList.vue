@@ -101,6 +101,24 @@ onBeforeUnmount(() => {
   lastScrollEvent = null
 })
 
+watch(
+  () => torrentStore.scrollToSelectedId,
+  (id) => {
+    if (id === null || !canvasListContainerRef.value) return
+    const idx = torrentStore.filterTorrents.findIndex((t) => t.id === id)
+    if (idx < 0) return
+    const heights = tableStore.cumulativeHeights.heights
+    const rowTop = idx === 0 ? 0 : (heights[idx - 1] || 0)
+    const containerHeight = tableStore.clientHeight
+    const rowHeight = (heights[idx] || 0) - rowTop
+    const viewTopVal = tableStore.viewTop
+    let targetScroll = rowTop + viewTopVal - (containerHeight - rowHeight) / 2
+    targetScroll = Math.max(0, targetScroll)
+    canvasListContainerRef.value.scrollTop = targetScroll
+    torrentStore.scrollToSelectedId = null
+  }
+)
+
 useResizeObserver(bodyRef, () => {
   bodyHeight.value = bodyRef.value?.clientHeight!
 })

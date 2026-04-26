@@ -250,8 +250,27 @@ export const useTorrentStore = defineStore('torrent', () => {
     immediate: false
   })
 
+  const scrollToSelectedId = ref<number | null>(null)
+
   watch([search, statusFilter, labelsFilter, trackerFilter, errorStringFilter, downloadDirFilter], () => {
-    clearSelectedKeys()
+    if (selectedKeys.value.length > 0) {
+      const prevSelectedKey = lastSelectedKey.value
+      nextTick(() => {
+        const newFilterIds = new Set(filterTorrents.value.map((t) => t.id))
+        const remaining = selectedKeys.value.filter((id) => newFilterIds.has(id))
+        if (remaining.length > 0) {
+          setSelectedKeys(remaining)
+          if (prevSelectedKey !== null && newFilterIds.has(prevSelectedKey)) {
+            scrollToSelectedId.value = prevSelectedKey
+          } else {
+            scrollToSelectedId.value = remaining[remaining.length - 1]
+          }
+        } else {
+          clearSelectedKeys()
+          scrollToSelectedId.value = null
+        }
+      })
+    }
   })
   ;(window as any).torrents = torrents
   return {
@@ -296,6 +315,7 @@ export const useTorrentStore = defineStore('torrent', () => {
     startDetailPolling,
     stopDetailPolling,
     detailTab,
-    setDetailTab
+    setDetailTab,
+    scrollToSelectedId
   }
 })

@@ -21,12 +21,14 @@
 import CanvasTableMobileBody from './CanvasTableMobileBody.vue'
 import { useCardStore } from './store/cardStore'
 import { TOOLBAR_HEIGHT } from './store/utils'
+import { useTorrentStore } from '@/store'
 
 const props = defineProps<{
   listHeight: number
 }>()
 
 const cardStore = useCardStore()
+const torrentStore = useTorrentStore()
 const canvasTableMobileBodyRef = useTemplateRef<InstanceType<typeof CanvasTableMobileBody>>('canvasTableMobileBodyRef')
 const scrollHolderRef = useTemplateRef<HTMLElement>('scrollHolderRef')
 const canvasMobileListWrapperRef = useTemplateRef<HTMLElement>('canvasMobileListWrapperRef')
@@ -88,6 +90,23 @@ onBeforeUnmount(() => {
   }
   lastScrollEvent = null
 })
+
+watch(
+  () => torrentStore.scrollToSelectedId,
+  (id) => {
+    if (id === null || !canvasMobileListContainerRef.value) return
+    const idx = torrentStore.filterTorrents.findIndex((t) => t.id === id)
+    if (idx < 0) return
+    const heights = cardStore.cumulativeHeights.heights
+    const rowTop = idx === 0 ? 0 : (heights[idx - 1] || 0)
+    const containerHeight = cardStore.clientHeight
+    const rowHeight = (heights[idx] || 0) - rowTop
+    let targetScroll = rowTop + TOOLBAR_HEIGHT - (containerHeight - rowHeight) / 2
+    targetScroll = Math.max(0, targetScroll)
+    canvasMobileListContainerRef.value.scrollTop = targetScroll
+    torrentStore.scrollToSelectedId = null
+  }
+)
 
 useResizeObserver(bodyRef, () => {
   bodyHeight.value = bodyRef.value?.clientHeight!
