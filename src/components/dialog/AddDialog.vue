@@ -5,14 +5,25 @@
     :title="$t('addDialog.title')"
     :close-on-esc="true"
     @close="onCancel"
-    style="width: 90vw; max-width: 800px; padding: 12px"
+    style="width: 90vw; max-width: 600px; padding: 12px"
   >
     <n-el class="add-dialog-content">
       <n-form :model="form" :label-placement="labelType" :label-width="labelType === 'top' ? undefined : 120">
         <n-form-item :label="$t('addDialog.torrentFile')" required v-if="props.type === 'file'">
-          <n-upload :max="50" multiple accept=".torrent" @change="onFileChange">
-            <n-button>{{ $t('addDialog.selectFile') }}</n-button>
-          </n-upload>
+          <div class="add-dialog-upload">
+            <n-upload
+              v-model:file-list="uploadFileList"
+              :default-upload="false"
+              accept=".torrent"
+              multiple
+              @change="onFileChange"
+            >
+              <n-button>{{ $t('addDialog.selectFile') }}</n-button>
+            </n-upload>
+            <div v-if="selectedTorrentFiles.length" class="add-dialog-upload__summary">
+              {{ $t('addDialog.selectedFiles', { count: selectedTorrentFiles.length }) }}
+            </div>
+          </div>
         </n-form-item>
         <n-form-item :label="$t('addDialog.magnetLink')" v-else>
           <n-input
@@ -23,56 +34,6 @@
               minRows: 10
             }"
           />
-        </n-form-item>
-
-        <!-- 种子内容显示区域 -->
-        <n-form-item :label="$t('addDialog.torrentContent')" v-if="props.type === 'file' && torrentInfo">
-          <div class="torrent-content">
-            <div class="torrent-info-header">
-              <div class="info-item">
-                <span class="label">{{ torrentInfo.name }}</span>
-              </div>
-              <div class="info-stats">
-                <span class="stat-item">{{ $t('addDialog.totalFiles', { count: torrentInfo.files.length }) }}</span>
-                <span class="stat-item">{{ $t('addDialog.totalSize', { size: formatSize(torrentInfo.totalSize) }) }}</span>
-              </div>
-            </div>
-
-            <!-- 文件选择统计 -->
-            <div class="selection-stats">
-              <span>{{ $t('addDialog.selectedFiles', { count: selectedFileCount }) }}</span>
-              <span class="stat-item">{{ $t('addDialog.selectedSize', { size: formatSize(selectedFileSize) }) }}</span>
-            </div>
-
-            <!-- 操作按钮 -->
-            <div class="file-actions">
-              <n-button size="small" @click="selectAllFiles">{{ $t('addDialog.selectAll') }}</n-button>
-              <n-button size="small" @click="deselectAllFiles">{{ $t('addDialog.deselectAll') }}</n-button>
-            </div>
-
-            <!-- 文件列表 -->
-            <div class="file-list">
-              <n-scrollbar style="max-height: 300px">
-                <div
-                  v-for="(file, index) in torrentInfo.files"
-                  :key="index"
-                  class="file-item"
-                  :class="{ selected: selectedFiles.has(index) }"
-                  @click="toggleFileSelection(index)"
-                >
-                  <n-checkbox
-                    :checked="selectedFiles.has(index)"
-                    @update:checked="toggleFileSelection(index)"
-                    @click.stop
-                  />
-                  <div class="file-info">
-                    <span class="file-name" :title="file.path">{{ file.path }}</span>
-                    <span class="file-size">{{ formatSize(file.length) }}</span>
-                  </div>
-                </div>
-              </n-scrollbar>
-            </div>
-          </div>
         </n-form-item>
 
         <n-form-item :label="$t('addDialog.downloadDir')">
@@ -112,12 +73,10 @@
       </n-form>
     </n-el>
     <template #action>
-      <div class="flex gap-2 w-full justify-end">
-        <n-button @click="onCancel" :loading="loading">{{ $t('common.cancel') }}</n-button>
-        <n-button type="primary" @click="onConfirm" :loading="loading" :disabled="!canAdd">{{
-          $t('common.add')
-        }}</n-button>
-      </div>
+      <n-button @click="onCancel" :loading="loading">{{ $t('common.cancel') }}</n-button>
+      <n-button type="primary" @click="onConfirm" :loading="loading" :disabled="confirmDisabled">{{
+        $t('common.add')
+      }}</n-button>
     </template>
   </n-modal>
 </template>
@@ -126,9 +85,9 @@
 import type { TorrentAddArgs } from '@/api/rpc'
 import { trpc } from '@/api/trpc'
 import { useSessionStore, useTorrentStore } from '@/store'
-import { sleep, formatSize } from '@/utils'
-import { parseTorrentFromBase64, type TorrentInfo } from '@/utils/torrentParser'
+import { sleep } from '@/utils'
 import { useIsSmallScreen } from '@/composables/useIsSmallScreen'
+import { useDownloadDirOptions } from '@/composables/useDownloadDirOptions'
 import type { UploadFileInfo } from 'naive-ui'
 import { useMessage } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
@@ -145,6 +104,14 @@ const show = defineModel<boolean>('show', { required: true })
 const message = useMessage()
 const loading = ref(false)
 const magnetLink = ref('')
+const uploadFileList = ref<UploadFileInfo[]>([])
+const selectedTorrentFiles = ref<
+  Array<{
+    id: string
+    name: string
+    metainfo: string
+  }>
+>([])
 const form = reactive<TorrentAddArgs>({
   'download-dir': '',
   labels: [],
@@ -154,120 +121,74 @@ const form = reactive<TorrentAddArgs>({
   sequential_download: false
 })
 
-// 种子信息
-const torrentInfo = ref<TorrentInfo | null>(null)
-// 选中的文件索引
-const selectedFiles = ref<Set<number>>(new Set())
-
-// 计算选中的文件数量
-const selectedFileCount = computed(() => selectedFiles.value.size)
-
-// 计算选中的文件大小
-const selectedFileSize = computed(() => {
-  if (!torrentInfo.value) {return 0}
-  let size = 0
-  selectedFiles.value.forEach((index) => {
-    const file = torrentInfo.value?.files[index]
-    if (file) {
-      size += file.length
-    }
-  })
-  return size
-})
-
-// 判断添加按钮是否可用
-const canAdd = computed(() => {
-  if (props.type === 'file') {
-    // 文件模式：需要选择了文件且选择了下载目录
-    return metainfoList.value.length > 0 && form['download-dir']
-  } else {
-    // 磁力链接模式：需要输入了磁力链接
-    return magnetLink.value.trim().length > 0
-  }
-})
-
-// 多文件上传的 metainfo 列表
-const metainfoList = ref<string[]>([])
-
 const bandwidthPriorityOptions = computed(() => [
   { label: $t('priority.low'), value: -1 },
   { label: $t('priority.normal'), value: 0 },
   { label: $t('priority.high'), value: 1 }
 ])
-
-// 展平树形目录结构为一维数组
-const flattenDirOptions = (items: any[]): any[] => {
-  const result: any[] = []
-  items.forEach((item) => {
-    if (item.key !== 'all') {
-      result.push({
-        label: item.key, // 使用完整路径作为显示标签
-        value: item.key
-      })
-      if (item.children && item.children.length > 0) {
-        result.push(...flattenDirOptions(item.children))
-      }
-    }
-  })
-  return result
-}
-
-const downloadDirOptions = computed(() =>
-  flattenDirOptions(torrentStore.downloadDirOptions)
+const magnetLinks = computed(() =>
+  magnetLink.value
+    .split('\n')
+    .map((item) => item.trim())
+    .filter(Boolean)
 )
+const confirmDisabled = computed(() =>
+  props.type === 'file' ? selectedTorrentFiles.value.length === 0 : magnetLinks.value.length === 0
+)
+
+const { downloadDirOptions } = useDownloadDirOptions()
 const labelsOptions = computed(() =>
   torrentStore.labelsOptions
     .filter((item: any) => item.key !== 'all' && item.key !== 'noLabels')
     .map((item: any) => ({
-      label: typeof item.label === 'string' ? item.label.replace(/（.*?）/, '') : item.key,
+      label: item.label.replace(/（.*?）/, ''),
       value: item.key
     }))
 )
 
-async function onFileChange(data: { file: UploadFileInfo; fileList: UploadFileInfo[] }) {
-  // 支持多文件上传
-  const files = data.fileList.map((f) => f.file).filter((f): f is File => f !== undefined)
-  if (files.length === 0) {
-    metainfoList.value = []
-    torrentInfo.value = null
-    selectedFiles.value.clear()
-    return
-  }
-  try {
-    metainfoList.value = await Promise.all(files.map((f) => readLocalTorrent(f)))
-
-    // 如果只有一个文件，解析并显示文件列表
-    if (metainfoList.value.length === 1) {
-      try {
-        torrentInfo.value = parseTorrentFromBase64(metainfoList.value[0])
-        // 默认全选所有文件
-        selectedFiles.value = new Set(torrentInfo.value.files.map((_, index) => index))
-      } catch (error) {
-        console.error('解析种子文件失败', error)
-        message.error($t('addDialog.parseFailed'))
-        torrentInfo.value = null
-        selectedFiles.value.clear()
+async function onFileChange(data: { fileList: UploadFileInfo[] }) {
+  const parsedFiles = await Promise.all(
+    data.fileList.map(async (uploadFile) => {
+      const rawFile = uploadFile.file as File | undefined
+      if (!rawFile) {
+        return null
       }
-    } else {
-      // 多文件模式，不显示文件列表
-      torrentInfo.value = null
-      selectedFiles.value.clear()
-    }
-  } catch {
-    message.error($t('addDialog.readFileFailed'))
-    metainfoList.value = []
-    torrentInfo.value = null
-    selectedFiles.value.clear()
+      try {
+        return {
+          id: uploadFile.id,
+          name: uploadFile.name,
+          metainfo: await readLocalTorrent(rawFile)
+        }
+      } catch {
+        return null
+      }
+    })
+  )
+  const validFiles = parsedFiles.filter((item): item is (typeof selectedTorrentFiles.value)[number] => item !== null)
+  selectedTorrentFiles.value = validFiles
+  const validIds = new Set(validFiles.map((item) => item.id))
+  uploadFileList.value = data.fileList.filter((item) => validIds.has(item.id))
+  form.metainfo = validFiles[0]?.metainfo ?? ''
+
+  const failedCount = data.fileList.length - validFiles.length
+  if (failedCount > 0) {
+    message.error(
+      failedCount === 1 ? $t('addDialog.readFileFailed') : $t('addDialog.readFileFailedCount', { count: failedCount })
+    )
   }
 }
 
 async function readLocalTorrent(file: File): Promise<string> {
-  return await new Promise((resolve) => {
+  return await new Promise((resolve, reject) => {
     const reader = new FileReader()
+    reader.onerror = () => {
+      reject(new Error('Error reading file'))
+    }
     reader.onloadend = () => {
       const b64 = (reader.result as string).match(/data:[^/]*\/[^;]*;base64,(.*)/)?.[1]
       if (b64 === undefined) {
-        throw Error('Error reading file')
+        reject(new Error('Error reading file'))
+        return
       }
       resolve(b64)
     }
@@ -275,37 +196,13 @@ async function readLocalTorrent(file: File): Promise<string> {
   })
 }
 
-// 切换文件选择
-function toggleFileSelection(index: number) {
-  if (selectedFiles.value.has(index)) {
-    selectedFiles.value.delete(index)
-  } else {
-    selectedFiles.value.add(index)
-  }
-  // 触发响应式更新
-  selectedFiles.value = new Set(selectedFiles.value)
-}
-
-// 全选
-function selectAllFiles() {
-  if (torrentInfo.value) {
-    selectedFiles.value = new Set(torrentInfo.value.files.map((_, index) => index))
-  }
-}
-
-// 取消全选
-function deselectAllFiles() {
-  selectedFiles.value.clear()
-  selectedFiles.value = new Set()
-}
-
 function onCancel() {
   show.value = false
 }
 
-async function addTask(metainfo: string, filename?: string, fileIndices?: number[]) {
+async function addTask(metainfo: string, filename?: string): Promise<'added' | 'duplicate' | 'failed'> {
   try {
-    const args: TorrentAddArgs = {
+    const res = await trpc.torrentAdd({
       'download-dir': form['download-dir']?.trim(),
       filename: filename,
       labels: form.labels,
@@ -313,32 +210,49 @@ async function addTask(metainfo: string, filename?: string, fileIndices?: number
       paused: !form.paused,
       bandwidthPriority: form.bandwidthPriority,
       sequential_download: form.sequential_download
-    }
-
-    // 如果有文件选择，添加文件选择参数
-    if (fileIndices && fileIndices.length > 0 && torrentInfo.value) {
-      // 如果不是全选，设置需要下载的文件
-      if (fileIndices.length < torrentInfo.value.files.length) {
-        args['files-wanted'] = fileIndices
-      }
-    }
-
-    const res = await trpc.torrentAdd(args)
+    })
     console.debug('添加种子', res)
     if (res.arguments['torrent-duplicate']) {
-      return { success: false, duplicate: true }
+      return 'duplicate'
     }
-    return { success: true }
-  } catch (error) {
-    console.error('添加种子失败', error)
-    return { success: false, error }
+    return 'added'
+  } catch {
+    return 'failed'
   }
+}
+
+function showAddMessage(total: number, added: number, duplicate: number, failed: number) {
+  if (total === 1) {
+    if (added === 1) {
+      message.success($t('addDialog.addSuccess'))
+      return
+    }
+    if (duplicate === 1) {
+      message.warning($t('addDialog.torrentExists'))
+      return
+    }
+    message.error($t('addDialog.addFailed'))
+    return
+  }
+
+  if (duplicate === 0 && failed === 0) {
+    message.success($t('addDialog.batchAddSuccess', { count: added }))
+    return
+  }
+
+  message.info(
+    $t('addDialog.batchAddResult', {
+      success: added,
+      duplicate,
+      failed
+    })
+  )
 }
 
 async function onConfirm() {
   if (props.type === 'file') {
-    if (!metainfoList.value || metainfoList.value.length === 0) {
-      message.error($t('addDialog.pleaseSelectFile'))
+    if (selectedTorrentFiles.value.length === 0) {
+      message.error($t('addDialog.pleaseSelectFiles'))
       return
     }
     if (!form['download-dir']) {
@@ -347,23 +261,38 @@ async function onConfirm() {
     }
     try {
       loading.value = true
-      const results = await Promise.all(
-        metainfoList.value.map(async (metainfo, index) => {
-          // 如果是第一个文件且有文件选择，传递文件索引
-          const fileIndices = index === 0 && selectedFiles.value.size > 0 ? Array.from(selectedFiles.value) : undefined
-          return await addTask(metainfo, undefined, fileIndices)
-        })
-      )
-      // 检查是否全部重复
-      const allDuplicate = results.every((r) => r.duplicate)
-      if (allDuplicate) {
-        message.warning($t('addDialog.torrentExists'))
-      } else {
-        message.success($t('addDialog.addSuccess'))
+      const total = selectedTorrentFiles.value.length
+      const failedFiles: typeof selectedTorrentFiles.value = []
+      let added = 0
+      let duplicate = 0
+
+      for (const torrentFile of selectedTorrentFiles.value) {
+        const result = await addTask(torrentFile.metainfo)
+        if (result === 'added') {
+          added += 1
+        } else if (result === 'duplicate') {
+          duplicate += 1
+        } else {
+          failedFiles.push(torrentFile)
+        }
+      }
+
+      if (added > 0) {
         await sleep(1000)
         await torrentStore.fetchTorrents()
       }
-      show.value = false
+
+      const failed = failedFiles.length
+      showAddMessage(total, added, duplicate, failed)
+
+      if (failed === 0) {
+        show.value = false
+      } else {
+        const failedIds = new Set(failedFiles.map((item) => item.id))
+        selectedTorrentFiles.value = failedFiles
+        uploadFileList.value = uploadFileList.value.filter((item) => failedIds.has(item.id))
+        form.metainfo = failedFiles[0]?.metainfo ?? ''
+      }
     } catch {
     } finally {
       loading.value = false
@@ -373,27 +302,37 @@ async function onConfirm() {
       message.error($t('addDialog.pleaseInputMagnet'))
       return
     }
-    // 解析磁力链接
-    const magnetLinks = magnetLink.value
-      .split('\n')
-      .map((item) => item.trim())
-      .filter(Boolean)
     try {
       loading.value = true
-      const results = await Promise.all(
-        magnetLinks.map(async (magnet) => {
-          return await addTask('', magnet)
-        })
-      )
-      const allDuplicate = results.every((r) => r.duplicate)
-      if (allDuplicate) {
-        message.warning($t('addDialog.torrentExists'))
-      } else {
-        message.success($t('addDialog.addSuccess'))
+      const total = magnetLinks.value.length
+      const failedMagnets: string[] = []
+      let added = 0
+      let duplicate = 0
+
+      for (const item of magnetLinks.value) {
+        const result = await addTask('', item)
+        if (result === 'added') {
+          added += 1
+        } else if (result === 'duplicate') {
+          duplicate += 1
+        } else {
+          failedMagnets.push(item)
+        }
+      }
+
+      if (added > 0) {
         await sleep(1000)
         await torrentStore.fetchTorrents()
       }
-      show.value = false
+
+      const failed = failedMagnets.length
+      showAddMessage(total, added, duplicate, failed)
+
+      if (failed === 0) {
+        show.value = false
+      } else {
+        magnetLink.value = failedMagnets.join('\n')
+      }
     } catch (error) {
       console.error(error)
     } finally {
@@ -413,10 +352,9 @@ watch(show, (v) => {
       bandwidthPriority: undefined,
       sequential_download: false
     })
-    metainfoList.value = []
     magnetLink.value = ''
-    torrentInfo.value = null
-    selectedFiles.value.clear()
+    uploadFileList.value = []
+    selectedTorrentFiles.value = []
   }
 })
 </script>
@@ -429,98 +367,13 @@ watch(show, (v) => {
   .scrollbar();
 }
 
-.torrent-content {
+.add-dialog-upload {
   width: 100%;
-  border: 1px solid var(--n-border-color);
-  border-radius: 4px;
-  overflow: hidden;
-}
 
-.torrent-info-header {
-  padding: 12px;
-  background: var(--n-color-modal);
-  border-bottom: 1px solid var(--n-border-color);
-
-  .info-item {
-    margin-bottom: 8px;
-
-    .label {
-      font-weight: 500;
-      word-break: break-all;
-    }
-  }
-
-  .info-stats {
-    display: flex;
-    gap: 16px;
+  &__summary {
+    margin-top: 8px;
     font-size: 12px;
-    color: var(--n-text-color-3);
+    color: var(--text-color-3);
   }
-}
-
-.selection-stats {
-  padding: 8px 12px;
-  background: var(--n-color-hover);
-  font-size: 12px;
-  color: var(--n-text-color-2);
-  display: flex;
-  gap: 16px;
-}
-
-.file-actions {
-  padding: 8px 12px;
-  display: flex;
-  gap: 8px;
-  border-bottom: 1px solid var(--n-border-color);
-}
-
-.file-list {
-  .file-item {
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    border-bottom: 1px solid var(--n-border-color);
-
-    &:last-child {
-      border-bottom: none;
-    }
-
-    &:hover {
-      background: var(--n-color-hover);
-    }
-
-    &.selected {
-      background: var(--n-color-hover);
-    }
-
-    .file-info {
-      flex: 1;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-left: 8px;
-      min-width: 0;
-
-      .file-name {
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        margin-right: 12px;
-      }
-
-      .file-size {
-        flex-shrink: 0;
-        font-size: 12px;
-        color: var(--n-text-color-3);
-      }
-    }
-  }
-}
-
-.stat-item {
-  white-space: nowrap;
 }
 </style>

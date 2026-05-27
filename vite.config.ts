@@ -8,10 +8,12 @@ import svgLoader from 'vite-svg-loader'
 import AutoImport from 'unplugin-auto-import/vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import fs from 'node:fs'
+import { VitePWA } from 'vite-plugin-pwa'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
   const base = env.VITE_BASE_URL || ''
+  const manifestBase = base.endsWith('/') ? base || '/' : `${base}/`
 
   // 读取 package.json 中的版本号
   const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'))
@@ -69,6 +71,52 @@ export default defineConfig(({ mode }) => {
       Components({
         resolvers: [NaiveUiResolver()],
         dts: true
+      }),
+      VitePWA({
+        registerType: 'prompt',
+        includeAssets: ['transmission.svg', 'apple-touch-icon.png', 'pwa-192.png', 'pwa-512.png'],
+        manifest: {
+          name: 'Transmission Web',
+          short_name: 'Transmission',
+          description: packageJson.description,
+          start_url: manifestBase,
+          scope: manifestBase,
+          display: 'standalone',
+          background_color: '#ffffff',
+          theme_color: '#d92323',
+          icons: [
+            {
+              src: `${manifestBase}pwa-192.png`,
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any'
+            },
+            {
+              src: `${manifestBase}pwa-512.png`,
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable'
+            },
+            {
+              src: `${manifestBase}transmission.svg`,
+              sizes: '512x512',
+              type: 'image/svg+xml',
+              purpose: 'any maskable'
+            },
+            {
+              src: `${manifestBase}apple-touch-icon.png`,
+              sizes: '180x180',
+              type: 'image/png',
+              purpose: 'any'
+            }
+          ]
+        },
+        devOptions: {
+          enabled: true
+        },
+        workbox: {
+          cleanupOutdatedCaches: true
+        }
       }),
       nodePolyfills({
         // 全局启用 Buffer polyfill

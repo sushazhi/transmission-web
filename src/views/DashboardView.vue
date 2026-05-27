@@ -195,12 +195,10 @@ onMounted(async () => {
   } catch (error) {
     console.error('Failed to fetch initial data:', error)
   }
-
-  // 启用种子列表轮询(每5秒),用于实时更新校验进度
+  // 启用种子列表轮询
   torrentStore.startPolling()
-  // 统计信息轮询暂时禁用,变化不频繁,可以手动刷新
-  // statsStore.startPolling()
-
+  statsStore.startPolling()
+  sessionStore.startPolling()
   loading.value = false
 })
 

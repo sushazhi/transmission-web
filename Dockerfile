@@ -2,7 +2,7 @@ FROM node:23-alpine AS node_builder
 WORKDIR /build
 
 # 先复制依赖相关文件，利用Docker缓存层
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # RUN npm config set registry https://registry.npmmirror.com/
 RUN npm install -g pnpm

@@ -50,6 +50,12 @@ export const useSettingStore = defineStore('setting', () => {
         torrentInterval: 5
       },
       menuExpandedKeys: ['status', 'labels', 'dir'],
+      // 目录侧边栏展示模式：list = 扁平展示所有目录；tree = 按层级折叠
+      dirMenuMode: 'list' as 'list' | 'tree',
+      // 添加种子/修改目录时是否使用历史下载目录作为联想
+      enableDownloadDirSuggestions: true,
+      // 用户自定义的下载目录字典（始终用于联想，不受历史联想开关影响）
+      customDownloadDirs: [] as string[],
       // 忽略域名中的部分前缀
       ignoredTrackerPrefixes: ['t', 'tr', 'tk', 'tracker', 'bt', 'open', 'opentracker', 'pt'],
       // 双击侧边栏选中该类型所有种子

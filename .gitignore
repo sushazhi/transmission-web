@@ -9,3 +9,5 @@ yarn-error.log*
 .env.local
 dist
 .env.local
+.secrets
+dev-dist

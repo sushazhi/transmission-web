@@ -10,13 +10,12 @@
     <div class="mb-2">{{ $t('changeDirDialog.selectedCount', { count: localSelectedKeys.length }) }}</div>
     <n-form :label-placement="labelType" :label-width="labelType === 'top' ? undefined : 120" :show-feedback="false">
       <n-form-item :label="$t('changeDirDialog.newDir')">
-        <n-select
+        <n-auto-complete
           v-model:value="dir"
           :options="downloadDirOptions"
           :placeholder="$t('changeDirDialog.newDirPlaceholder')"
           clearable
-          filterable
-          style="width: 300px"
+          :get-show="() => true"
         />
       </n-form-item>
       <n-form-item>
@@ -35,6 +34,7 @@ import { useTorrentStore, useSessionStore } from '@/store'
 import { rpc } from '@/api/rpc'
 import { useI18n } from 'vue-i18n'
 import { useIsSmallScreen } from '@/composables/useIsSmallScreen'
+import { useDownloadDirOptions } from '@/composables/useDownloadDirOptions'
 import { getSelectIds } from './utils'
 const isMobile = useIsSmallScreen()
 const labelType = computed(() => (isMobile.value ? 'top' : 'left'))
@@ -51,26 +51,7 @@ const props = defineProps<{
 }>()
 const localSelectedKeys = ref<number[]>([])
 
-// 展平树形目录结构为一维数组
-const flattenDirOptions = (items: any[]): any[] => {
-  const result: any[] = []
-  items.forEach((item) => {
-    if (item.key !== 'all') {
-      result.push({
-        label: item.key, // 使用完整路径作为显示标签
-        value: item.key
-      })
-      if (item.children && item.children.length > 0) {
-        result.push(...flattenDirOptions(item.children))
-      }
-    }
-  })
-  return result
-}
-
-const downloadDirOptions = computed(() =>
-  flattenDirOptions(torrentStore.downloadDirOptions)
-)
+const { downloadDirOptions } = useDownloadDirOptions()
 
 watch(
   () => show.value,

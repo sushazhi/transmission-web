@@ -3,9 +3,6 @@
  * 支持 IndexedDB 缓存，避免重复下载
  */
 
-import * as mmdb from 'mmdb-lib'
-import type { CountryResponse } from 'mmdb-lib'
-
 const CDN_VERSION = '2.3.2026021419'
 const FILENAME = 'geolite2-country.mmdb'
 const CDN_URL = `https://fastly.jsdelivr.net/npm/@ip-location-db/geolite2-country-mmdb@${CDN_VERSION}/${FILENAME}`
@@ -20,9 +17,11 @@ interface DatabaseMetadata {
   source: 'cdn' | 'cache'
 }
 
-let databaseReader: mmdb.Reader<CountryResponse> | null = null
+type MmdbReader = import('mmdb-lib').Reader<import('mmdb-lib').CountryResponse>
+
+let databaseReader: MmdbReader | null = null
 let databaseMetadata: DatabaseMetadata | null = null
-let loadingPromise: Promise<mmdb.Reader<CountryResponse>> | null = null
+let loadingPromise: Promise<MmdbReader> | null = null
 
 async function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -88,17 +87,18 @@ async function loadDatabaseBuffer(): Promise<ArrayBuffer> {
   return fetchFromCDN()
 }
 
-export async function loadDatabase(): Promise<mmdb.Reader<CountryResponse>> {
+export async function loadDatabase(): Promise<MmdbReader> {
   if (databaseReader !== null) {return databaseReader}
   if (loadingPromise !== null) {return loadingPromise}
 
   const startTime = performance.now()
 
   loadingPromise = (async () => {
-    const buffer = await loadDatabaseBuffer()
-    const arrayBuffer = Buffer.from(buffer)
-    const isFromCache = await loadFromCache().then((cachedData) => cachedData?.byteLength === buffer.byteLength)
-    const reader = new mmdb.Reader<CountryResponse>(arrayBuffer)
+    const mmdbModule = await import('mmdb-lib')
+    const buf = await loadDatabaseBuffer()
+    const arrayBuffer = Buffer.from(buf)
+    const isFromCache = await loadFromCache().then((cachedData) => cachedData?.byteLength === buf.byteLength)
+    const reader = new mmdbModule.Reader<import('mmdb-lib').CountryResponse>(arrayBuffer)
     const loadTime = ((performance.now() - startTime) / 1000).toFixed(2)
 
     databaseMetadata = {

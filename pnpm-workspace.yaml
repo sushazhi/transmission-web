@@ -1,0 +1,5 @@
+overrides:
+  vite: npm:rolldown-vite@latest
+
+allowBuilds:
+  esbuild: true

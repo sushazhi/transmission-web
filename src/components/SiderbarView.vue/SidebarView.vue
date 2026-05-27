@@ -5,6 +5,7 @@
     <DirMenu v-if="settingStore.setting.sidebarMenuVisible.dir" />
     <TrackerMenu v-if="settingStore.setting.sidebarMenuVisible.tracker" />
     <ErrMenu v-if="settingStore.setting.sidebarMenuVisible.error" />
+    <StatsMenu />
     
     <!-- 右键菜单 -->
     <n-dropdown

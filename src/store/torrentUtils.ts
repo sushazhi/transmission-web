@@ -147,6 +147,121 @@ export const mapToOptions = (map: Map<string, IMenuItem>, total: number) => {
   ]
 }
 
+// 目录菜单选项（树形结构）
+export interface IDirMenuOption {
+  key: string
+  label: string
+  count: number
+  children?: IDirMenuOption[]
+}
+
+const lastSegmentOf = (path: string): string => {
+  if (!path) {
+    return ''
+  }
+  const idx = path.lastIndexOf('/')
+  return idx < 0 ? path : path.substring(idx + 1)
+}
+
+// 将扁平的下载目录集合按 `/` 切分构建成树形菜单
+export const buildDirMenuTree = (
+  downloadDirSet: Map<string, IMenuItem>
+): { options: IDirMenuOption[]; validKeys: Set<string> } => {
+  interface ITreeNode {
+    fullPath: string
+    count: number
+    totalCount: number
+    children: Map<string, ITreeNode>
+  }
+
+  const root: ITreeNode = { fullPath: '', count: 0, totalCount: 0, children: new Map() }
+
+  for (const [dir, item] of downloadDirSet.entries()) {
+    const normalized = dir.replace(/\/+$/, '')
+    const parts = normalized.split('/')
+    let cumPath = ''
+    let curNode = root
+    for (let i = 0; i < parts.length; i++) {
+      cumPath = i === 0 ? parts[i] : `${cumPath}/${parts[i]}`
+      let child = curNode.children.get(cumPath)
+      if (!child) {
+        child = { fullPath: cumPath, count: 0, totalCount: 0, children: new Map() }
+        curNode.children.set(cumPath, child)
+      }
+      curNode = child
+    }
+    curNode.count += item.count
+  }
+
+  const computeTotal = (node: ITreeNode): number => {
+    let total = node.count
+    for (const child of node.children.values()) {
+      total += computeTotal(child)
+    }
+    node.totalCount = total
+    return total
+  }
+  computeTotal(root)
+
+  const validKeys = new Set<string>(['all'])
+
+  const computeSegment = (fullPath: string, parentPath: string): string => {
+    if (parentPath === '' && fullPath !== '') {
+      return fullPath
+    }
+    return lastSegmentOf(fullPath) || fullPath || '/'
+  }
+
+  const toOption = (node: ITreeNode, parentPath: string): IDirMenuOption => {
+    validKeys.add(node.fullPath)
+    const segment = computeSegment(node.fullPath, parentPath)
+    const children: IDirMenuOption[] = []
+    for (const child of node.children.values()) {
+      children.push(toOption(child, node.fullPath))
+    }
+    const result: IDirMenuOption = {
+      key: node.fullPath,
+      label: `${segment}（${node.totalCount}）`,
+      count: node.totalCount
+    }
+    if (children.length > 0) {
+      result.children = children
+    }
+    return result
+  }
+
+  const options: IDirMenuOption[] = []
+  for (const child of root.children.values()) {
+    if (child.fullPath === '' && child.count === 0 && child.children.size > 0) {
+      for (const grandchild of child.children.values()) {
+        options.push(toOption(grandchild, ''))
+      }
+    } else {
+      options.push(toOption(child, ''))
+    }
+  }
+
+  return { options, validKeys }
+}
+
+// 扁平的目录菜单
+export const buildDirMenuList = (
+  downloadDirSet: Map<string, IMenuItem>
+): { options: IDirMenuOption[]; validKeys: Set<string> } => {
+  const validKeys = new Set<string>(['all'])
+  const options: IDirMenuOption[] = []
+  for (const [dir, item] of downloadDirSet.entries()) {
+    validKeys.add(dir)
+    options.push({
+      key: dir,
+      label: `${dir}（${item.count}）`,
+      count: item.count
+    })
+  }
+  return { options, validKeys }
+}
+
+// 兼容旧的树形目录构建方式
 export interface IDirMenuItem {
   key: string
   label: string
@@ -156,7 +271,6 @@ export interface IDirMenuItem {
 
 export const buildDirTree = (dirMap: Map<string, IMenuItem>, total: number) => {
   const $t = i18n.global.t
-
   const allPaths = new Set<string>()
   dirMap.forEach((_, path) => {
     const parts = path.split('/').filter(Boolean)
@@ -164,20 +278,13 @@ export const buildDirTree = (dirMap: Map<string, IMenuItem>, total: number) => {
       allPaths.add('/' + parts.slice(0, index + 1).join('/'))
     })
   })
-
   const nodes = new Map<string, IDirMenuItem>()
   allPaths.forEach((path) => {
     const parts = path.split('/').filter(Boolean)
     const label = parts[parts.length - 1]
     const isActualPath = dirMap.has(path)
-    nodes.set(path, {
-      key: path,
-      label: label,
-      count: isActualPath ? dirMap.get(path)!.count : 0,
-      children: []
-    })
+    nodes.set(path, { key: path, label, count: isActualPath ? dirMap.get(path)!.count : 0, children: [] })
   })
-
   const tree: IDirMenuItem[] = []
   nodes.forEach((node, path) => {
     const parts = path.split('/').filter(Boolean)
@@ -191,29 +298,22 @@ export const buildDirTree = (dirMap: Map<string, IMenuItem>, total: number) => {
       }
     }
   })
-
   const calculateCount = (node: IDirMenuItem): number => {
     let sum = node.count
     if (node.children && node.children.length > 0) {
-      node.children.forEach((child) => {
-        sum += calculateCount(child)
-      })
+      node.children.forEach((child) => { sum += calculateCount(child) })
       node.children.sort((a, b) => a.label.localeCompare(b.label))
     }
     node.count = sum
-    if (!node.children || node.children.length === 0) {
-      delete node.children
-    }
+    if (!node.children || node.children.length === 0) { delete node.children }
     return sum
   }
-
   tree.forEach((node) => calculateCount(node))
   tree.sort((a, b) => a.label.localeCompare(b.label))
-
-  const allOption: IDirMenuItem = { key: 'all', label: `${$t('common.all', { total })}`, count: total }
-  return [allOption, ...tree]
+  return [({ key: 'all', label: `${$t('common.all', { total })}`, count: total }), ...tree]
 }
 
+const normalizeTorrentSearchText = (value: string) => value.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, '')
 // 是否可以过滤这个种子
 export const isFilterTorrents = function (
   t: Torrent,
@@ -222,18 +322,16 @@ export const isFilterTorrents = function (
   labelsFilter: globalThis.Ref<string, string>,
   trackerFilter: globalThis.Ref<string, string>,
   errorStringFilter: globalThis.Ref<string, string>,
-  downloadDirFilter: globalThis.Ref<string, string>
+  downloadDirFilter: globalThis.Ref<string, string>,
+  dirMenuMode: 'list' | 'tree' = 'list'
 ) {
   // === 2. 同时进行过滤判断 ===
   let shouldInclude = true
+  const normalizedSearch = normalizeTorrentSearchText(search.value)
 
-  // 搜索过滤（模糊搜索，不区分大小写，忽略 ". - / " 和空格）
-  if (search.value) {
-    const normalizedSearch = search.value.toLowerCase().replace(/[.\-/\s]/g, '')
-    const normalizedName = t.name.toLowerCase().replace(/[.\-/\s]/g, '')
-    if (!normalizedName.includes(normalizedSearch)) {
-      shouldInclude = false
-    }
+  // 搜索过滤（使用已有的 normalizeTorrentSearchText）
+  if (normalizedSearch && !normalizeTorrentSearchText(t.name).includes(normalizedSearch)) {
+    shouldInclude = false
   }
 
   // 状态过滤
@@ -278,15 +376,19 @@ export const isFilterTorrents = function (
     shouldInclude = false
   }
 
-  // 下载目录过滤（支持递归匹配子目录）
-  if (
-    shouldInclude &&
-    downloadDirFilter.value &&
-    downloadDirFilter.value !== 'all' &&
-    t.downloadDir !== downloadDirFilter.value &&
-    !t.downloadDir.startsWith(downloadDirFilter.value + '/')
-  ) {
-    shouldInclude = false
+  // 下载目录过滤
+  // - tree 模式：前缀匹配（父目录可筛出其下所有子目录的种子）
+  // - list 模式：精确匹配（保留原始扁平菜单的语义）
+  if (shouldInclude && downloadDirFilter.value && downloadDirFilter.value !== 'all') {
+    const filterPath = downloadDirFilter.value
+    const torrentDir = t.downloadDir
+    if (dirMenuMode === 'tree') {
+      if (torrentDir !== filterPath && !torrentDir.startsWith(`${filterPath}/`)) {
+        shouldInclude = false
+      }
+    } else if (torrentDir !== filterPath) {
+      shouldInclude = false
+    }
   }
 
   return shouldInclude

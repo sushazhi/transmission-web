@@ -9,13 +9,13 @@
 </template>
 <script setup lang="ts">
 import { useTorrentStore, useSettingStore } from '@/store'
+import type { IDirMenuOption } from '@/store/torrentUtils'
 import { renderIcon } from '@/utils'
-import { FileTray, Folder, FolderOpen } from '@vicons/ionicons5'
+import { FileTray, Folder, FolderOpen, ShuffleOutline } from '@vicons/ionicons5'
+import type { MenuOption } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { useClickHandler } from '@/composables/useClickHandler'
 import { getMatchingTorrentIds } from '@/utils/torrentSelection'
-import type { IDirMenuItem } from '@/store/torrentUtils'
-
 const torrentStore = useTorrentStore()
 const settingStore = useSettingStore()
 const { t: $t } = useI18n()
@@ -23,31 +23,34 @@ const { handleClick } = useClickHandler()
 
 const expandedKeys = ref<string[]>(['dir'])
 
-const convertToMenuOptions = (items: IDirMenuItem[]) => {
-  return items.map((item) => {
-    const result: any = {
-      key: item.key,
-      label: `${item.label}（${item.count}）`,
-      icon: renderIcon(item.children ? Folder : FolderOpen)
-    }
-    if (item.key === 'all') {
-      result.icon = renderIcon(FileTray)
-    }
-    if (item.children && item.children.length > 0) {
-      result.children = convertToMenuOptions(item.children)
-    }
-    return result
-  })
+// 递归地把目录树节点转成 n-menu 选项
+const decorate = (option: IDirMenuOption): MenuOption => {
+  const menuOption: MenuOption = {
+    key: option.key,
+    label: option.label,
+    icon: renderIcon(option.children ? FolderOpen : Folder)
+  }
+  if (option.children && option.children.length > 0) {
+    menuOption.children = option.children.map(decorate)
+  }
+  return menuOption
 }
 
-const dirMenuOptions = computed(() => {
-  const dirOptions = torrentStore.downloadDirOptions as IDirMenuItem[]
+const dirMenuOptions = computed<MenuOption[]>(() => {
+  const total = torrentStore.torrents.length
   return [
     {
       label: $t('sidebar.directory'),
       key: 'dir',
       icon: renderIcon(FileTray),
-      children: convertToMenuOptions(dirOptions)
+      children: [
+        {
+          key: 'all',
+          label: $t('common.all', { total }),
+          icon: renderIcon(ShuffleOutline)
+        },
+        ...torrentStore.downloadDirMenuOptions.map(decorate)
+      ]
     }
   ]
 })

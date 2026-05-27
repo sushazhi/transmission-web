@@ -7,6 +7,8 @@ import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { Status } from '@/types/tr'
 import {
+  buildDirMenuList,
+  buildDirMenuTree,
   detailFilterOptions,
   isFilterTorrents,
   mapToOptions,
@@ -140,18 +142,28 @@ export const useTorrentStore = defineStore('torrent', () => {
     const mapFilterTorrentsIndex: Record<number, number> = {}
     const mapTorrentsIndex: Record<number, number> = {}
 
+    // 目录菜单当前模式（read once，使其参与依赖收集）
+    const dirMenuMode = settingStore.setting.dirMenuMode
+
     // 一次循环完成所有计算：统计 + 过滤
-    let filteredIndex = 0
     torrents.value.forEach((t, idx) => {
       mapTorrentsIndex[t.id] = idx
       // 将选项全部放到 map 中
       detailFilterOptions(t, labelsSet, trackerSet, errorStringSet, downloadDirSet, statusSet)
       // 如果通过所有过滤条件，加入结果数组
       if (
-        isFilterTorrents(t, search, statusFilter, labelsFilter, trackerFilter, errorStringFilter, downloadDirFilter)
+        isFilterTorrents(
+          t,
+          search,
+          statusFilter,
+          labelsFilter,
+          trackerFilter,
+          errorStringFilter,
+          downloadDirFilter,
+          dirMenuMode
+        )
       ) {
         filtered.push(t)
-        mapFilterTorrentsIndex[t.id] = filteredIndex++
       }
     })
 
@@ -159,6 +171,9 @@ export const useTorrentStore = defineStore('torrent', () => {
     if (sortKey.value) {
       sortTorrents(filtered, sortKey, sortOrder)
     }
+    filtered.forEach((t, idx) => {
+      mapFilterTorrentsIndex[t.id] = idx
+    })
     // 检测所有的 filter 的值是否在 map 里面，如果不在重置成全部
     if (!statusSet.get(statusFilter.value)) {
       statusFilter.value = 'all'
@@ -172,7 +187,10 @@ export const useTorrentStore = defineStore('torrent', () => {
     if (!errorStringSet.get(errorStringFilter.value)) {
       errorStringFilter.value = 'all'
     }
-    if (!downloadDirSet.get(downloadDirFilter.value)) {
+    // 根据用户配置生成目录菜单：扁平 (list) 或 树形 (tree)
+    // validKeys 用于校验当前过滤值是否仍然有效（数据/模式变化后失效则重置）
+    const dirMenu = dirMenuMode === 'tree' ? buildDirMenuTree(downloadDirSet) : buildDirMenuList(downloadDirSet)
+    if (!dirMenu.validKeys.has(downloadDirFilter.value)) {
       downloadDirFilter.value = 'all'
     }
     const options = {
@@ -180,6 +198,7 @@ export const useTorrentStore = defineStore('torrent', () => {
       trackerOptions: mapToOptions(trackerSet, torrents.value.length),
       errorStringOptions: mapToOptions(errorStringSet, torrents.value.length),
       downloadDirOptions: buildDirTree(downloadDirSet, torrents.value.length),
+      downloadDirMenuOptions: dirMenu.options,
       statusOptions: mapToOptions(statusSet, torrents.value.length)
     }
     return {
@@ -194,6 +213,8 @@ export const useTorrentStore = defineStore('torrent', () => {
   const options = computed(() => computedData.value.options)
   const filterTorrents = computed(() => computedData.value.filterTorrents)
   const mapFilterTorrentsIndex = computed(() => computedData.value.mapFilterTorrentsIndex)
+  const scrollToTorrentId = ref<number | null>(null)
+  const scrollToTorrentRequest = ref(0)
 
   // selection 相关逻辑拆分
   const {
@@ -206,6 +227,32 @@ export const useTorrentStore = defineStore('torrent', () => {
     lastSelectedKey,
     setLastSelectedKey
   } = useSelection(() => filterTorrents.value)
+
+  function requestScrollToTorrent(id: number | null) {
+    if (id === null || mapFilterTorrentsIndex.value[id] === undefined) {
+      return
+    }
+    scrollToTorrentId.value = id
+    scrollToTorrentRequest.value += 1
+  }
+
+  function keepVisibleSelectionAndRequestScroll() {
+    if (selectedKeys.value.length === 0) {
+      return
+    }
+    const visibleSelectedKeys = selectedKeys.value.filter((id) => mapFilterTorrentsIndex.value[id] !== undefined)
+    if (visibleSelectedKeys.length === 0) {
+      clearSelectedKeys()
+      return
+    }
+    const targetId =
+      lastSelectedKey.value !== null && visibleSelectedKeys.includes(lastSelectedKey.value)
+        ? lastSelectedKey.value
+        : visibleSelectedKeys[visibleSelectedKeys.length - 1]
+    setSelectedKeys(visibleSelectedKeys)
+    setLastSelectedKey(targetId)
+    requestScrollToTorrent(targetId)
+  }
 
   async function fetchTorrents() {
     const fields = listFields
@@ -252,25 +299,8 @@ export const useTorrentStore = defineStore('torrent', () => {
 
   const scrollToSelectedId = ref<number | null>(null)
 
-  watch([search, statusFilter, labelsFilter, trackerFilter, errorStringFilter, downloadDirFilter], () => {
-    if (selectedKeys.value.length > 0) {
-      const prevSelectedKey = lastSelectedKey.value
-      nextTick(() => {
-        const newFilterIds = new Set(filterTorrents.value.map((t) => t.id))
-        const remaining = selectedKeys.value.filter((id) => newFilterIds.has(id))
-        if (remaining.length > 0) {
-          setSelectedKeys(remaining)
-          if (prevSelectedKey !== null && newFilterIds.has(prevSelectedKey)) {
-            scrollToSelectedId.value = prevSelectedKey
-          } else {
-            scrollToSelectedId.value = remaining[remaining.length - 1]
-          }
-        } else {
-          clearSelectedKeys()
-          scrollToSelectedId.value = null
-        }
-      })
-    }
+  watch([search, statusFilter, labelsFilter, trackerFilter, errorStringFilter, downloadDirFilter, sortKey, sortOrder], () => {
+    keepVisibleSelectionAndRequestScroll()
   })
   ;(window as any).torrents = torrents
   return {
@@ -288,6 +318,7 @@ export const useTorrentStore = defineStore('torrent', () => {
     trackerOptions: computed(() => options.value.trackerOptions),
     errorStringOptions: computed(() => options.value.errorStringOptions),
     downloadDirOptions: computed(() => options.value.downloadDirOptions),
+    downloadDirMenuOptions: computed(() => options.value.downloadDirMenuOptions),
     statusOptions: computed(() => options.value.statusOptions),
     fetchTorrents,
     mapSelectedKeys,
@@ -311,6 +342,9 @@ export const useTorrentStore = defineStore('torrent', () => {
     sortOrder,
     setSort,
     mapColumnWidth,
+    scrollToTorrentId,
+    scrollToTorrentRequest,
+    requestScrollToTorrent,
     fetchDetails,
     startDetailPolling,
     stopDetailPolling,

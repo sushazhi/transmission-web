@@ -34,6 +34,12 @@
   "header": {
     "title": "Transmission Web"
   },
+  "pwa": {
+    "updateTitle": "New version available",
+    "updateDescription": "The new version is ready. Click update now to refresh the page automatically.",
+    "updateNow": "Update now",
+    "updateFailed": "Update failed. Please try again later."
+  },
   "login": {
     "title": "Transmission Login",
     "domain": "Domain",
@@ -52,7 +58,8 @@
     "title": "Add Torrent",
     "torrentFile": "Torrent File",
     "magnetLink": "Magnet Link",
-    "selectFile": "Select Torrent File",
+    "selectFile": "Select Torrent Files",
+    "selectedFiles": "{count} torrent files selected",
     "magnetPlaceholder": "Multiple magnet links separated by line breaks",
     "downloadDir": "Download Directory",
     "downloadDirPlaceholder": "Select or enter download directory",
@@ -62,9 +69,12 @@
     "priorityPlaceholder": "Select priority",
     "sequentialDownload": "Sequential Download",
     "addSuccess": "Added successfully",
+    "batchAddSuccess": "Added {count} torrents successfully",
+    "batchAddResult": "Added {success}, {duplicate} already existed, {failed} failed",
     "addFailed": "Failed to add",
     "torrentExists": "Torrent already exists",
     "pleaseSelectFile": "Please select torrent file first",
+    "pleaseSelectFiles": "Please select torrent files first",
     "pleaseSelectDir": "Please select download directory",
     "pleaseInputMagnet": "Please enter magnet link",
     "readFileFailed": "Failed to read file",
@@ -77,7 +87,8 @@
     "totalFiles": "Total {count} files",
     "totalSize": "Total Size: {size}",
     "parseFailed": "Failed to parse torrent file",
-    "noFiles": "No file information"
+    "noFiles": "No file information",
+    "readFileFailedCount": "Failed to read {count} files"
   },
   "deleteDialog": {
     "title": "Delete Torrent Confirmation",
@@ -117,6 +128,16 @@
     "labelsPlaceholder": "Select or enter labels",
     "changeSuccess": "Labels changed successfully",
     "changeFailed": "Failed to change labels"
+  },
+  "statsDialog": {
+    "title": "Statistics",
+    "cumulative": "Cumulative",
+    "currentSession": "Current Session",
+    "uploaded": "Uploaded",
+    "downloaded": "Downloaded",
+    "filesAdded": "Files Added",
+    "sessionCount": "Sessions",
+    "activeTime": "Active Time"
   },
   "aboutDialog": {
     "title": "About Transmission Web",
@@ -318,6 +339,16 @@
     "fontSize": "Font Size",
     "singleLine": "Single Line Display",
     "enableDoubleClickSelect": "Double-click to select all in group",
+    "dirMenuMode": "Directory Menu Mode",
+    "dirMenuModeList": "List",
+    "dirMenuModeTree": "Tree",
+    "dirMenuModeHint": "List: flat view of all download directories. Tree: collapse by levels and expand subdirectories manually.",
+    "enableDownloadDirSuggestions": "Download Directory History Suggestions",
+    "enableDownloadDirSuggestionsHint": "When disabled, adding a torrent or changing the directory will no longer suggest historical download paths. Only the custom directories listed below will be shown.",
+    "customDownloadDirs": "Frequently Used Download Directories",
+    "customDownloadDirsPlaceholder": "Enter a download path, e.g. /downloads/movies",
+    "customDownloadDirsHint": "Define your own frequently used download paths here. They will always appear at the top of the suggestion list, regardless of the history suggestion switch.",
+    "enableScript": "Enable Torrent Completion Script",
     "scriptHooks": "Execute Scripts",
     "enableDoneScript": "Execute Script After Download Complete",
     "enableAddedScript": "Execute Script After Torrent Added",
