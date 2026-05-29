@@ -68,7 +68,8 @@ export const useSettingStore = defineStore('setting', () => {
         labels: true,
         dir: true,
         tracker: true,
-        error: true
+        error: true,
+        stats: true
       },
       // 状态过滤器显示配置
       statusFilterVisible: {

@@ -5,7 +5,7 @@
     <DirMenu v-if="settingStore.setting.sidebarMenuVisible.dir" />
     <TrackerMenu v-if="settingStore.setting.sidebarMenuVisible.tracker" />
     <ErrMenu v-if="settingStore.setting.sidebarMenuVisible.error" />
-    <StatsMenu />
+    <StatsMenu v-if="settingStore.setting.sidebarMenuVisible.stats" />
     
     <!-- 右键菜单 -->
     <n-dropdown
@@ -106,6 +106,15 @@ const contextMenuOptions = computed(() => [
     label: $t('sidebar.showGroupSize'),
     key: 'showGroupSize',
     icon: () => renderCheckIcon(settingStore.setting.showGroupSize)
+  },
+  {
+    type: 'divider',
+    key: 'd3'
+  },
+  {
+    label: $t('sidebar.showStats'),
+    key: 'stats',
+    icon: () => renderCheckIcon(settingStore.setting.sidebarMenuVisible.stats)
   }
 ])
 

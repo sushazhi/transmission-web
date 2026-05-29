@@ -173,7 +173,8 @@
     "statusFilterTitle": "状态过滤器",
     "showSidebar": "开启侧边栏",
     "hideSidebar": "关闭侧边栏",
-    "showGroupSize": "显示分组体积"
+    "showGroupSize": "显示分组体积",
+    "showStats": "显示数据统计"
   },
   "status": {
     "stopped": "已暂停",

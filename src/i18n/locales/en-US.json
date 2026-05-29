@@ -173,7 +173,8 @@
     "statusFilterTitle": "Status Filter",
     "showSidebar": "Show Sidebar",
     "hideSidebar": "Hide Sidebar",
-    "showGroupSize": "Show Group Size"
+    "showGroupSize": "Show Group Size",
+    "showStats": "Show Statistics"
   },
   "status": {
     "stopped": "Stopped",
