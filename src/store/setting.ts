@@ -59,7 +59,7 @@ export const useSettingStore = defineStore('setting', () => {
       // 忽略域名中的部分前缀
       ignoredTrackerPrefixes: ['t', 'tr', 'tk', 'tracker', 'bt', 'open', 'opentracker', 'pt'],
       // 双击侧边栏选中该类型所有种子
-      enableDoubleClickSelect: true,
+      enableDoubleClickSelect: false,
       // 字体大小
       fontSize: 14,
       // 侧边栏菜单显示配置
